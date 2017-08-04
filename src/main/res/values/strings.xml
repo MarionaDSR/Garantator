@@ -1,4 +1,8 @@
 <resources>
+    <string name="content_authority" translatable="false">es.dsrroma.garantator</string>
+
     <string name="app_name">Garantator</string>
+    <string name="title_activity_detail">Warranty Detail</string>
+
     <string name="error_message">Error!</string>
 </resources>
