@@ -1,5 +1,6 @@
 package es.dsrroma.garantator;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,7 +15,7 @@ import java.util.List;
 import es.dsrroma.garantator.adapters.WarrantyAdapter;
 import es.dsrroma.garantator.data.model.Warranty;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements WarrantyAdapter.WarrantyAdapterOnClickHandler {
 
     private WarrantyAdapter warrantyAdapter;
 
@@ -35,10 +36,17 @@ public class MainActivity extends AppCompatActivity {
         rvWarrantiesList.setLayoutManager(layoutManager);
         rvWarrantiesList.setHasFixedSize(true); // all items will have the same size
 
-        warrantyAdapter = new WarrantyAdapter();
+        warrantyAdapter = new WarrantyAdapter(this);
         rvWarrantiesList.setAdapter(warrantyAdapter);
 
         warrantyAdapter.setWarranties(dummyWarranties());
+    }
+
+    @Override
+    public void onClick(Warranty warranty) {
+        Intent intentDetailActivity = new Intent(this, DetailActivity.class);
+        intentDetailActivity.putExtra(DetailActivity.EXTRA_WARRANTY, warranty);
+        startActivity(intentDetailActivity);
     }
 
     @Deprecated

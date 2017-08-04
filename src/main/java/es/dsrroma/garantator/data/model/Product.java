@@ -1,11 +1,31 @@
 package es.dsrroma.garantator.data.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 public class Product extends AbstractModel  {
 
     private Category category;
     private Brand brand;
     private String model;
     private String serialNumber;
+
+    private Product(Parcel in) {
+        super(in);
+        category = in.readParcelable(Category.class.getClassLoader());
+        brand = in.readParcelable(Brand.class.getClassLoader());
+        model = in.readString();
+        serialNumber = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
+        dest.writeParcelable(category, flags);
+        dest.writeParcelable(brand, flags);
+        dest.writeString(model);
+        dest.writeString(serialNumber);
+    }
 
     public Category getCategory() {
         return category;
@@ -43,4 +63,14 @@ public class Product extends AbstractModel  {
     public String toString() {
         return super.toString() + SEP + getSerialNumber();
     }
+
+    public static final Parcelable.Creator<Product> CREATOR = new Parcelable.Creator<Product>() {
+        public Product createFromParcel(Parcel in) {
+            return new Product(in);
+        }
+
+        public Product[] newArray(int size) {
+            return new Product[size];
+        }
+    };
 }

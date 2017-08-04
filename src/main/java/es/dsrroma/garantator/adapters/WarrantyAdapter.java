@@ -16,17 +16,31 @@ public class WarrantyAdapter extends RecyclerView.Adapter<WarrantyAdapter.Warran
 
     private List<Warranty> warranties;
 
-    public WarrantyAdapter() {
+    private final WarrantyAdapterOnClickHandler clickHandler;
 
+    public WarrantyAdapter(WarrantyAdapterOnClickHandler clickHandler) {
+        this.clickHandler = clickHandler;
     }
 
-    public class WarrantyAdapterViewHolder extends RecyclerView.ViewHolder {
+    public class WarrantyAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public final TextView tvName;
 
         public WarrantyAdapterViewHolder(View view) {
             super(view);
             tvName = (TextView) view.findViewById(R.id.tvWarrantyName);
+            view.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            int adapterPosition = getAdapterPosition();
+            Warranty clickedWarranty = warranties.get(adapterPosition);
+            clickHandler.onClick(clickedWarranty);
+        }
+    }
+
+    public interface WarrantyAdapterOnClickHandler {
+        void onClick(Warranty warranty);
     }
 
     @Override
