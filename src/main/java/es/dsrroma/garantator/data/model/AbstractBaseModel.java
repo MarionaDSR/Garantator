@@ -3,26 +3,26 @@ package es.dsrroma.garantator.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public abstract class AbstractModel implements Parcelable {
+public abstract class AbstractBaseModel implements Parcelable {
     protected String SEP = ":";
 
-    private int id;
+    private long id;
     private String name;
 
-    protected AbstractModel() {
+    protected AbstractBaseModel() {
 
     }
 
-    protected AbstractModel(Parcel in) {
-        id = in.readInt();
+    protected AbstractBaseModel(Parcel in) {
+        id = in.readLong();
         name = in.readString();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -46,7 +46,7 @@ public abstract class AbstractModel implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
+        dest.writeLong(id);
         dest.writeString(name);
     }
 }

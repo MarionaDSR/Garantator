@@ -3,7 +3,7 @@ package es.dsrroma.garantator.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Category extends AbstractModel  {
+public class Category extends AbstractBaseModel {
 
     private Category(Parcel in) {
         super(in);

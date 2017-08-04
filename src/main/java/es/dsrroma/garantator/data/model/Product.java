@@ -3,7 +3,7 @@ package es.dsrroma.garantator.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Product extends AbstractModel  {
+public class Product extends AbstractBaseModel {
 
     private Category category;
     private Brand brand;

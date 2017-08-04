@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
-public class Warranty extends AbstractModel {
+public class Warranty extends AbstractBaseModel {
     private Product product;
     private Date startDate;
 
