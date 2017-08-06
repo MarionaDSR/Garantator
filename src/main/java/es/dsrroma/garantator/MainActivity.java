@@ -1,6 +1,7 @@
 package es.dsrroma.garantator;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -22,6 +23,8 @@ import es.dsrroma.garantator.data.contracts.CategoryContract;
 import es.dsrroma.garantator.data.contracts.ProductContract;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.Warranty;
+
+import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements
         WarrantyAdapter.WarrantyAdapterOnClickHandler,
@@ -79,7 +82,9 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public List<Warranty> loadInBackground() {
-                return dummyWarranties(); // TODO load from DB
+//                return dummyWarranties(); // TODO load from DB
+                Cursor cursor =  getContentResolver().query(WARRANTY_CONTENT_URI, null, null, null, null, null);
+                return WarrantyContract.getBeansFromCursor(cursor);
             }
 
             @Override

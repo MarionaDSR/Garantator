@@ -1,5 +1,13 @@
 package es.dsrroma.garantator.data.contracts;
 
+import android.database.Cursor;
+import android.net.Uri;
+
+import java.util.List;
+
+import es.dsrroma.garantator.data.model.Category;
+import es.dsrroma.garantator.utils.CursorToBeanUtils;
+
 public class CategoryContract extends BaseContract {
 
     // SQL Constants
@@ -22,4 +30,14 @@ public class CategoryContract extends BaseContract {
     public static final String CATEGORY_PATH = "warranty";
     public static final int CATEGORY_CODE = BASE_CODE * 4;
     public static final int CATEGORY_CODE_BY_ID = CATEGORY_CODE+ QUERY_BY_ID;
+    public static final Uri CATEGORY_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(CATEGORY_PATH).build();
+
+
+    public static Category getBeanFromCursor(Cursor cursor) {
+        return CursorToBeanUtils.cursorToBean(cursor, Category.class);
+    }
+
+    public static List<Category> getBeansFromCursor(Cursor cursor) {
+        return CursorToBeanUtils.cursorToBeans(cursor, Category.class);
+    }
 }

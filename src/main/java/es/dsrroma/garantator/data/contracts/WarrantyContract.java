@@ -1,5 +1,13 @@
 package es.dsrroma.garantator.data.contracts;
 
+import android.database.Cursor;
+import android.net.Uri;
+
+import java.util.List;
+
+import es.dsrroma.garantator.data.model.Warranty;
+import es.dsrroma.garantator.utils.CursorToBeanUtils;
+
 import static es.dsrroma.garantator.data.contracts.ProductContract.ProductEntry;
 
 public class WarrantyContract extends BaseContract {
@@ -30,4 +38,14 @@ public class WarrantyContract extends BaseContract {
     public static final String WARRANTY_PATH = "warranty";
     public static final int WARRANTY_CODE = BASE_CODE;
     public static final int WARRANTY_CODE_BY_ID = WARRANTY_CODE + QUERY_BY_ID;
+    public static final Uri WARRANTY_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(WARRANTY_PATH).build();
+
+
+    public static Warranty getBeanFromCursor(Cursor cursor) {
+        return CursorToBeanUtils.cursorToBean(cursor, Warranty.class);
+    }
+
+    public static List<Warranty> getBeansFromCursor(Cursor cursor) {
+        return CursorToBeanUtils.cursorToBeans(cursor, Warranty.class);
+    }
 }
