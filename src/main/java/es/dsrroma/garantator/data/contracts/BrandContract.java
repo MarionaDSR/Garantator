@@ -26,14 +26,14 @@ public class BrandContract extends BaseContract {
     }
 
     // Content Provider Constants
-    public static final String BRAND_PATH = "warranty";
+    public static final String BRAND_PATH = "brand";
     public static final int BRAND_CODE = BASE_CODE * 3;
     public static final int BRAND_CODE_BY_ID = BRAND_CODE + QUERY_BY_ID;
     public static final Uri BRAND_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(BRAND_PATH).build();
 
 
-    public static Brand getBeanFromCursor(Cursor cursor) {
-        return CursorToBeanUtils.cursorToBean(cursor, Brand.class);
+    public static Brand getBeanFromCursor(Cursor cursor, int position) {
+        return CursorToBeanUtils.cursorToBean(cursor, position, Brand.class);
     }
 
     public static List<Brand> getBeansFromCursor(Cursor cursor) {

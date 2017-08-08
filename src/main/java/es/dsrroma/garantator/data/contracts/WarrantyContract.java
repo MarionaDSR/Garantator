@@ -41,8 +41,8 @@ public class WarrantyContract extends BaseContract {
     public static final Uri WARRANTY_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(WARRANTY_PATH).build();
 
 
-    public static Warranty getBeanFromCursor(Cursor cursor) {
-        return CursorToBeanUtils.cursorToBean(cursor, Warranty.class);
+    public static Warranty getBeanFromCursor(Cursor cursor, int position) {
+        return CursorToBeanUtils.cursorToBean(cursor, position, Warranty.class);
     }
 
     public static List<Warranty> getBeansFromCursor(Cursor cursor) {

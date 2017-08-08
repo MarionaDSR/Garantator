@@ -42,14 +42,14 @@ public class ProductContract extends BaseContract {
     }
 
     // Content Provider Constants
-    public static final String PRODUCT_PATH = "warranty";
+    public static final String PRODUCT_PATH = "product";
     public static final int PRODUCT_CODE = BASE_CODE * 2;
     public static final int PRODUCT_CODE_BY_ID = PRODUCT_CODE + QUERY_BY_ID;
     public static final Uri PRODUCT_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PRODUCT_PATH).build();
 
 
-    public static Product getBeanFromCursor(Cursor cursor) {
-        return CursorToBeanUtils.cursorToBean(cursor, Product.class);
+    public static Product getBeanFromCursor(Cursor cursor, int position) {
+        return CursorToBeanUtils.cursorToBean(cursor, position, Product.class);
     }
 
     public static List<Product> getBeansFromCursor(Cursor cursor) {

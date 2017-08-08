@@ -1,16 +1,20 @@
 package es.dsrroma.garantator;
 
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import es.dsrroma.garantator.data.model.Warranty;
+import es.dsrroma.garantator.utils.CursorToBeanUtils;
 
 public class DetailActivity extends AppCompatActivity {
 
-    public static final String EXTRA_WARRANTY = "extraWarranty";
     private TextView tvWarrantyName;
+
+    private Warranty warranty;
+    private Cursor cursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,12 +23,13 @@ public class DetailActivity extends AppCompatActivity {
 
         tvWarrantyName = (TextView) findViewById(R.id.tvWarrantyName);
 
-        Intent intent = getIntent();
-        if (intent != null) {
-            if (intent.hasExtra(EXTRA_WARRANTY)) {
-                Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
-                tvWarrantyName.setText(warranty.getName());
-            }
+        final Uri warrantyUri = getIntent().getData();
+        cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            warranty = CursorToBeanUtils.cursorToBean(cursor, 0, Warranty.class);
+            tvWarrantyName.setText(warranty.getName());
         }
+
     }
 }

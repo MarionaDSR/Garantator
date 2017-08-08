@@ -87,6 +87,7 @@ public class WarrantiesProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
     }
 
@@ -120,7 +121,7 @@ public class WarrantiesProvider extends ContentProvider {
         int queryType = getQueryType(uriCode);
         Uri returnUri;
         switch (queryType) {
-            case QUERY_BY_ID:
+            case QUERY_ALL:
                 SQLiteDatabase db = openHelper.getWritableDatabase();
                 String tableName = getTableName(uriCode);
                 Uri contentUri = getContentUri(uriCode);
@@ -175,11 +176,11 @@ public class WarrantiesProvider extends ContentProvider {
     }
 
     private static int getQueryType(int code) {
-        return code / BaseContract.BASE_CODE;
+        return code % BaseContract.BASE_CODE;
     }
 
     private static int getTableCode(int code) {
-        return code % BaseContract.BASE_CODE;
+        return (code / BaseContract.BASE_CODE) * BaseContract.BASE_CODE;
     }
 
     private static String getTableName(int code) {

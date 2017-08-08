@@ -7,6 +7,7 @@ import java.util.Date;
 
 public class Warranty extends AbstractBaseModel {
     private Product product;
+    private long productId;
     private Date startDate;
 
     public Warranty() {
@@ -39,6 +40,14 @@ public class Warranty extends AbstractBaseModel {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(long productId) {
+        this.productId = productId;
     }
 
     public Date getStartDate() {

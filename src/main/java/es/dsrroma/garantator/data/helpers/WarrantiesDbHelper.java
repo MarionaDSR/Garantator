@@ -1,8 +1,12 @@
 package es.dsrroma.garantator.data.helpers;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import es.dsrroma.garantator.data.contracts.BrandContract;
 import es.dsrroma.garantator.data.contracts.CategoryContract;
@@ -21,10 +25,24 @@ public class WarrantiesDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(BrandContract.SQL_CREATE_BRAND_TABLE);
-        db.execSQL(CategoryContract.SQL_CREATE_CATEGORY_TABLE);
-        db.execSQL(ProductContract.SQL_CREATE_PRODUCT_TABLE);
-        db.execSQL(WarrantyContract.SQL_CREATE_WARRANTY_TABLE);
+        try {
+            db.execSQL(BrandContract.SQL_CREATE_BRAND_TABLE);
+            db.execSQL(CategoryContract.SQL_CREATE_CATEGORY_TABLE);
+            db.execSQL(ProductContract.SQL_CREATE_PRODUCT_TABLE);
+            db.execSQL(WarrantyContract.SQL_CREATE_WARRANTY_TABLE);
+
+            ContentValues cv = new ContentValues();
+            cv.put(WarrantyContract.WarrantyEntry.COLUMN_NAME, "test" + System.currentTimeMillis());
+            db.insert(WarrantyContract.WarrantyEntry.TABLE_NAME, null, cv);
+
+            Cursor cursor = db.rawQuery("select count(*) from Warranties", null);
+            cursor.moveToFirst();
+            int i = cursor.getInt(0);
+            cursor.close();
+        } catch (SQLException e) {
+            Log.d("WarrantiesDbHelper", "onCreate", e);
+            throw e;
+        }
     }
 
     @Override

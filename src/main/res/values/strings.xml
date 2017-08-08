@@ -3,6 +3,10 @@
 
     <string name="app_name">Garantator</string>
     <string name="title_activity_detail">Warranty Detail</string>
+    <string name="add_warranty_title">Add Warranty</string>
+    <string name="warranty_name_hint">Warranty Name</string>
+
+    <string name="save">Save</string>
 
     <string name="error_message">Error!</string>
 </resources>

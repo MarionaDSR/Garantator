@@ -1,24 +1,25 @@
 package es.dsrroma.garantator.adapters;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.List;
-
 import es.dsrroma.garantator.R;
 import es.dsrroma.garantator.data.model.Warranty;
+import es.dsrroma.garantator.utils.CursorToBeanUtils;
 
 public class WarrantyAdapter extends RecyclerView.Adapter<WarrantyAdapter.WarrantyAdapterViewHolder>{
 
-    private List<Warranty> warranties;
+    private Cursor cursor;
 
-    private final WarrantyAdapterOnClickHandler clickHandler;
+    private final OnItemClickListener clickHandler;
 
-    public WarrantyAdapter(WarrantyAdapterOnClickHandler clickHandler) {
+    public WarrantyAdapter(Cursor cursor, OnItemClickListener clickHandler) {
+        this.cursor = cursor;
         this.clickHandler = clickHandler;
     }
 
@@ -33,14 +34,16 @@ public class WarrantyAdapter extends RecyclerView.Adapter<WarrantyAdapter.Warran
 
         @Override
         public void onClick(View v) {
-            int adapterPosition = getAdapterPosition();
-            Warranty clickedWarranty = warranties.get(adapterPosition);
-            clickHandler.onClick(clickedWarranty);
+            int position = getAdapterPosition();
+
+            if (clickHandler != null) {
+                clickHandler.onItemClick(itemView, position);
+            }
         }
     }
 
-    public interface WarrantyAdapterOnClickHandler {
-        void onClick(Warranty warranty);
+    public interface OnItemClickListener {
+        void onItemClick(View v, int position);
     }
 
     @Override
@@ -53,16 +56,29 @@ public class WarrantyAdapter extends RecyclerView.Adapter<WarrantyAdapter.Warran
 
     @Override
     public void onBindViewHolder(WarrantyAdapterViewHolder holder, int position) {
-        holder.tvName.setText(warranties.get(position).getName());
+        Warranty warranty = CursorToBeanUtils.cursorToBean(cursor, position, Warranty.class);
+        holder.itemView.setTag(warranty);
+        holder.tvName.setText(warranty.getName());
+    }
+
+    public Warranty getItem(int position) {
+        return CursorToBeanUtils.cursorToBean(cursor, position, Warranty.class);
+    }
+
+    public long getItemId(int position) {
+        return getItem(position).getId();
     }
 
     @Override
     public int getItemCount() {
-        return warranties == null ? 0 : warranties.size();
+        return (cursor != null) ? cursor.getCount() : 0;
     }
 
-    public void setWarranties(List<Warranty> warranties) {
-        this.warranties = warranties;
+    public void swapCursor(Cursor cursor) {
+        if (this.cursor != null) {
+            this.cursor.close();
+        }
+        this.cursor = cursor;
         notifyDataSetChanged();
     }
 }

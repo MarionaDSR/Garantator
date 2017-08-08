@@ -15,48 +15,58 @@ public class CursorToBeanUtils {
 
     private static final String SET = "set";
 
-    public static <T> T cursorToBean(Cursor cursor, Class<T> clazz) {
-        List<T> beans = cursorToBeans(cursor, clazz);
-        if (beans.size() == 1) {
-            return beans.get(0);
+    public static <T> T cursorToBean(Cursor cursor, int position, Class<T> clazz) {
+        if (cursor.moveToPosition(position)) {
+            return oneBean(cursor, clazz);
         } else {
-            throw new IllegalArgumentException("The cursor have more than one result");
+            throw new IllegalArgumentException("The cursor has no element on " + position + " position");
         }
     }
 
     public static <T> List<T> cursorToBeans (Cursor cursor, Class<T> clazz) {
         List<T> beans = new ArrayList<>();
         if (cursor != null && cursor.getCount() > 0) {
-            String[] columns = cursor.getColumnNames();
             while (cursor.moveToNext()) {
-                try {
-                    T bean = clazz.newInstance();
-                    for (String column : columns) {
-                        setValue(cursor, column, clazz, bean);
-                    }
-                    beans.add(bean);
-                } catch (InstantiationException e) {
-                    throw new IllegalArgumentException("Class " + clazz.getName() + " not instantiable", e);
-                } catch (IllegalAccessException e) {
-                    throw new IllegalArgumentException("Constructor method for " + clazz.getName() + " not accessible", e);
-                }
-
+                beans.add(oneBean(cursor, clazz));
             }
         }
         return beans;
     }
 
+    private static <T> T oneBean(Cursor cursor, Class<T> clazz) {
+        String[] columns = cursor.getColumnNames();
+        try {
+            T bean = clazz.newInstance();
+            for (String column : columns) {
+                setValue(cursor, column, clazz, bean);
+            }
+            return bean;
+        } catch (InstantiationException e) {
+            throw new IllegalArgumentException("Class " + clazz.getName() + " not instantiable", e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException("Constructor method for " + clazz.getName() + " not accessible", e);
+        }
+    }
+
     private static <T> void setValue(Cursor cursor, String column, Class<T> clazz, T bean) {
         try {
-            Field field = clazz.getField(column);
-            Method setter = getSetter(column, field, clazz);
+            String fieldName = (column.startsWith("_")) ? column.substring(1) : column; // TODO
+            Field field;
+            try {
+                field = clazz.getDeclaredField(fieldName);
+            } catch(NoSuchFieldException e) {
+                try {
+                    field = clazz.getSuperclass().getDeclaredField(fieldName);
+                } catch(NoSuchFieldException e2) {
+                    throw new IllegalArgumentException("No field for column " + column + " in " + clazz.getName(), e2);
+                }
+            }
+            Method setter = getSetter(fieldName, field, clazz);
             Object value = getFieldValue(cursor, column, field);
             setter.invoke(bean, value);
-        } catch(NoSuchFieldException e){
-            throw new IllegalArgumentException("No field for column " + column + " in " + clazz.getName(), e);
-        } catch(InvocationTargetException e){
+        } catch(InvocationTargetException e) {
             throw new IllegalArgumentException("setter method for " + column + " throw an exception", e);
-        } catch(IllegalAccessException e){
+        } catch(IllegalAccessException e) {
             throw new IllegalArgumentException("setter method for " + column + " not accessible", e);
         }
     }

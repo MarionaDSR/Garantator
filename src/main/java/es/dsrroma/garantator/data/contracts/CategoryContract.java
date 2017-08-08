@@ -27,14 +27,14 @@ public class CategoryContract extends BaseContract {
     }
 
     // Content Provider Constants
-    public static final String CATEGORY_PATH = "warranty";
+    public static final String CATEGORY_PATH = "category";
     public static final int CATEGORY_CODE = BASE_CODE * 4;
-    public static final int CATEGORY_CODE_BY_ID = CATEGORY_CODE+ QUERY_BY_ID;
+    public static final int CATEGORY_CODE_BY_ID = CATEGORY_CODE + QUERY_BY_ID;
     public static final Uri CATEGORY_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(CATEGORY_PATH).build();
 
 
-    public static Category getBeanFromCursor(Cursor cursor) {
-        return CursorToBeanUtils.cursorToBean(cursor, Category.class);
+    public static Category getBeanFromCursor(Cursor cursor, int position) {
+        return CursorToBeanUtils.cursorToBean(cursor, position, Category.class);
     }
 
     public static List<Category> getBeansFromCursor(Cursor cursor) {

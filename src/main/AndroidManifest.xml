@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop">
             <intent-filter>
@@ -18,19 +19,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".DetailActivity"
             android:label="@string/title_activity_detail"
             android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
         </activity>
-    </application>
 
-    <provider
-        android:name=".data.helper.WarrantiesProvider"
-        android:authorities="@string/content_authority"
-        android:exported="false" />
+        <activity android:name=".AddWarrantyActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <provider
+            android:name=".data.helpers.WarrantiesProvider"
+            android:authorities="@string/content_authority"
+            android:exported="false" />
+
+        <service
+            android:name=".data.services.WarrantyUpdateService"
+            android:exported="false" />
+
+    </application>
 
 </manifest>
