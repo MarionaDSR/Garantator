@@ -7,6 +7,8 @@
     <string name="warranty_name_hint">Warranty Name</string>
 
     <string name="save">Save</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 
     <string name="error_message">Error!</string>
 </resources>
