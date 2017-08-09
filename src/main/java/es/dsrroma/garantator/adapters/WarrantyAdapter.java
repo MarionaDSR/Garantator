@@ -28,7 +28,7 @@ public class WarrantyAdapter extends RecyclerView.Adapter<WarrantyAdapter.Warran
 
         public WarrantyAdapterViewHolder(View view) {
             super(view);
-            tvName = (TextView) view.findViewById(R.id.tvWarrantyName);
+            tvName = (TextView) view.findViewById(R.id.tvName);
             view.setOnClickListener(this);
         }
 

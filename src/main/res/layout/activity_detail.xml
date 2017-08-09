@@ -6,7 +6,7 @@
     tools:context="es.dsrroma.garantator.DetailActivity">
 
     <TextView
-        android:id="@+id/tvWarrantyName"
+        android:id="@+id/tvName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="@dimen/generalPadding"/>

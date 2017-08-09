@@ -15,6 +15,10 @@ public class CursorToBeanUtils {
 
     private static final String SET = "set";
 
+    public static <T> T cursorToBean(Cursor cursor, Class<T> clazz) {
+        return cursorToBean(cursor, 0, clazz);
+    }
+
     public static <T> T cursorToBean(Cursor cursor, int position, Class<T> clazz) {
         if (cursor.moveToPosition(position)) {
             return oneBean(cursor, clazz);
