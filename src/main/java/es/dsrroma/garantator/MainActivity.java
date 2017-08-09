@@ -92,8 +92,8 @@ public class MainActivity extends AppCompatActivity implements
         tvErrorMessage.setVisibility(View.INVISIBLE);
     }
 
-    private void showErrorMessage(int errorMessage) {
-        tvErrorMessage.setText(errorMessage);
+    private void showErrorMessage(int errorMessage, String ... s) {
+        tvErrorMessage.setText(getString(errorMessage, s));
         rvWarrantiesList.setVisibility(View.INVISIBLE);
         tvErrorMessage.setVisibility(View.VISIBLE);
     }

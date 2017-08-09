@@ -9,7 +9,4 @@
     <string name="save">Save</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
-
-    <string name="error_message">Error!</string>
-    <string name="error_empty_list">No data found. Please add some…</string>
 </resources>

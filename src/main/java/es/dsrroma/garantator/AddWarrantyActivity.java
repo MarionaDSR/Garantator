@@ -10,6 +10,7 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.Warranty;
@@ -79,11 +80,13 @@ public class AddWarrantyActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_done:
-                ContentValues cv = warrantyToContentValues();
-                if (editMode) {
-                    updateWarranty(cv);
-                } else { // add mode
-                    addWarranty(cv);
+                if (validateContents()) {
+                    ContentValues cv = warrantyToContentValues();
+                    if (editMode) {
+                        updateWarranty(cv);
+                    } else { // add mode
+                        addWarranty(cv);
+                    }
                 }
                 return true;
         }
@@ -99,6 +102,16 @@ public class AddWarrantyActivity extends AppCompatActivity {
         Uri uri = WARRANTY_CONTENT_URI.buildUpon().appendPath(warranty.getId() + "").build();
         WarrantyUpdateService.updateWarranty(this, uri, cv);
         finish();
+    }
+
+    private boolean validateContents() {
+        boolean res = true;
+        if (etName.getText().toString().isEmpty()) {
+            res = false;
+            String message = getString(R.string.error_empty_input, getString(R.string.warranty_name_hint));
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show(); // TODO manage errors
+        }
+        return res;
     }
 
     private ContentValues warrantyToContentValues() {

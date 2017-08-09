@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_message">Error!</string>
+    <!-- Main Activity -->
+    <string name="error_empty_list">No data found. Please add some…</string>
+
+    <!-- AddWarrantyActivity -->
+    <string name="error_empty_input">%s must be filled</string>
+
+    <!-- Others -->
+</resources>
