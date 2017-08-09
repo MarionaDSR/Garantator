@@ -9,6 +9,8 @@
     </style>
 
     <style name="errorMessage">
+        <item name="android:padding">@dimen/generalPadding</item>
+        <item name="android:gravity">center</item>
         <item name="android:textColor">@color/colorAccent</item>
     </style>
 

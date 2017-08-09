@@ -74,7 +74,9 @@ public class MainActivity extends AppCompatActivity implements
         pbLoadingIndicator.setVisibility(View.INVISIBLE);
         warrantyAdapter.swapCursor(data);
         if (data == null) {
-            showErrorMessage();
+            showErrorMessage(R.string.error_message);
+        } else if (data.getCount() == 0) {
+            showErrorMessage(R.string.error_empty_list);
         } else {
             showList();
         }
@@ -90,7 +92,8 @@ public class MainActivity extends AppCompatActivity implements
         tvErrorMessage.setVisibility(View.INVISIBLE);
     }
 
-    private void showErrorMessage() {
+    private void showErrorMessage(int errorMessage) {
+        tvErrorMessage.setText(errorMessage);
         rvWarrantiesList.setVisibility(View.INVISIBLE);
         tvErrorMessage.setVisibility(View.VISIBLE);
     }
