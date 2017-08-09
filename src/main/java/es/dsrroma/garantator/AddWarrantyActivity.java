@@ -10,7 +10,6 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.Warranty;
@@ -82,10 +81,8 @@ public class AddWarrantyActivity extends AppCompatActivity {
             case R.id.action_done:
                 ContentValues cv = warrantyToContentValues();
                 if (editMode) {
-                    Toast.makeText(this, "Updated!! " + warranty.getName(), Toast.LENGTH_SHORT).show();
                     updateWarranty(cv);
                 } else { // add mode
-                    Toast.makeText(this, "Add!! " + warranty.getName(), Toast.LENGTH_SHORT).show();
                     addWarranty(cv);
                 }
                 return true;

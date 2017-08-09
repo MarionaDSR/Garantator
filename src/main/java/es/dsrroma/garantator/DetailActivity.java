@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
@@ -76,11 +75,9 @@ public class DetailActivity extends AppCompatActivity implements
         int id = item.getItemId();
         switch (id) {
             case R.id.action_edit:
-                Toast.makeText(this, "Edit!! " + warranty.getName(), Toast.LENGTH_SHORT).show();
                 editWarranty();
                 return true;
             case R.id.action_delete:
-                Toast.makeText(this, "Delete!! " + warranty.getId(), Toast.LENGTH_SHORT).show();
                 deleteWarranty();
                 return true;
         }
