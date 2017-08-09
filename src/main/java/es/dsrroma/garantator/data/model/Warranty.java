@@ -17,21 +17,14 @@ public class Warranty extends AbstractBaseModel {
     private Warranty(Parcel in) {
         super(in);
         product = in.readParcelable(Product.class.getClassLoader());
-        long time = in.readLong();
-        if (time > 0) {
-            startDate = new Date(in.readLong());
-        }
+        startDate = readDate(in);
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
         dest.writeParcelable(product, flags);
-        long time = 0;
-        if (startDate != null) {
-            time = startDate.getTime();
-        }
-        dest.writeLong(time);
+        writeDate(dest, startDate);
     }
 
     public Product getProduct() {

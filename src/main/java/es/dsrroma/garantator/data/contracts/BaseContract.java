@@ -23,11 +23,15 @@ public abstract class BaseContract {
 
     public static final String SQL_BASE_FIELDS =
             BaseEntry.COLUMN_ID + SQL_INTEGER + SQL_PK + SQL_COMMA +
-                    BaseEntry.COLUMN_NAME + SQL_STRING + SQL_UNIQUE_NOT_NULL;
+                    BaseEntry.COLUMN_NAME + SQL_STRING + SQL_UNIQUE_NOT_NULL + SQL_COMMA +
+            BaseEntry.COLUMN_CREATED_AT + SQL_DATE + SQL_COMMA +
+                    BaseEntry.COLUMN_UPDATED_AT + SQL_DATE;
 
     public static class BaseEntry implements BaseColumns {
         public static final String COLUMN_ID = "_id";
         public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_CREATED_AT = "createdAt";
+        public static final String COLUMN_UPDATED_AT = "updatedAt";
     }
 
     // Content Provider Constants

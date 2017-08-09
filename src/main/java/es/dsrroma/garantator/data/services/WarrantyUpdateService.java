@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import es.dsrroma.garantator.data.contracts.BaseContract;
+
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 
 public class WarrantyUpdateService extends IntentService {
@@ -26,6 +28,10 @@ public class WarrantyUpdateService extends IntentService {
     }
 
     public static void insertNewWarranty(Context context, ContentValues values) {
+        long now = System.currentTimeMillis();
+        values.put(BaseContract.BaseEntry.COLUMN_CREATED_AT, now);
+        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
+
         Intent intent = new Intent(context, WarrantyUpdateService.class);
         intent.setAction(ACTION_INSERT);
         intent.putExtra(EXTRA_VALUES, values);
@@ -33,6 +39,9 @@ public class WarrantyUpdateService extends IntentService {
     }
 
     public static void updateWarranty(Context context, Uri uri, ContentValues values) {
+        long now = System.currentTimeMillis();
+        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
+
         Intent intent = new Intent(context, WarrantyUpdateService.class);
         intent.setAction(ACTION_UPDATE);
         intent.setData(uri);
