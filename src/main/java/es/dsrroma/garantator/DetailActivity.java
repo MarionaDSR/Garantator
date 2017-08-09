@@ -70,7 +70,8 @@ public class DetailActivity extends AppCompatActivity {
 
     private void editWarranty() {
         Intent intent = new Intent(this, AddWarrantyActivity.class);
-        // TODO pass warranty to edit
+        Uri uri = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
+        intent.setData(uri);
         startActivity(intent);
     }
 }
