@@ -5,10 +5,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import es.dsrroma.garantator.data.contracts.BaseContract;
+import es.dsrroma.garantator.utils.NotifyUserRunnable;
 
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 
@@ -70,20 +72,40 @@ public class WarrantyUpdateService extends IntentService {
     }
 
     private void performInsert(ContentValues values) {
-        if (getContentResolver().insert(WARRANTY_CONTENT_URI, values) != null) {
-            Log.d(TAG, "Inserted new warranty");
-        } else {
-            Log.w(TAG, "Error inserting new warranty");
+        try {
+            if (getContentResolver().insert(WARRANTY_CONTENT_URI, values) == null) {
+                notifyMessage("Error inserting new warranty");
+            }
+        } catch (final Throwable t) {
+            notifyProblem(t);
         }
     }
 
     private void performUpdate(Uri uri, ContentValues values) {
-        int count = getContentResolver().update(uri, values, null, null);
-        Log.d(TAG, "Updated " + count + " warranty items");
+        try {
+            int count = getContentResolver().update(uri, values, null, null);
+            notifyMessage("Updated " + count + " warranty items");
+        } catch (final Throwable t) {
+            notifyProblem(t);
+        }
     }
 
     private void performDelete(Uri uri) {
-        int count = getContentResolver().delete(uri, null, null);
-        Log.d(TAG, "Deleted " + count + " warranties");
+        try {
+            int count = getContentResolver().delete(uri, null, null);
+            notifyMessage("Deleted " + count + " warranties");
+        } catch (final Throwable t) {
+            notifyProblem(t);
+        }
+    }
+
+    private void notifyMessage(String s) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new NotifyUserRunnable(getApplicationContext(), s));
+    }
+
+    private void notifyProblem(Throwable t) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new NotifyUserRunnable(getApplicationContext(), t));
     }
 }

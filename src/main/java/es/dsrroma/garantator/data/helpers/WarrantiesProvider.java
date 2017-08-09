@@ -71,7 +71,8 @@ public class WarrantiesProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection,
+                        @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         int uriCode = uriMatcher.match(uri);
         String tableName = getTableName(uriCode);
         int queryType = getQueryType(uriCode);
@@ -126,7 +127,7 @@ public class WarrantiesProvider extends ContentProvider {
                 String tableName = getTableName(uriCode);
                 Uri contentUri = getContentUri(uriCode);
 
-                long id = db.insert(tableName, null, values);
+                long id = db.insertOrThrow(tableName, null, values);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(contentUri, id);
                 } else {
@@ -141,7 +142,8 @@ public class WarrantiesProvider extends ContentProvider {
     }
 
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection,
+                      @Nullable String[] selectionArgs) {
         int uriCode = uriMatcher.match(uri);
         int queryType = getQueryType(uriCode);
         int updated;
@@ -150,7 +152,9 @@ public class WarrantiesProvider extends ContentProvider {
                 SQLiteDatabase db = openHelper.getWritableDatabase();
                 String id = uri.getPathSegments().get(1);
                 String tableName = getTableName(uriCode);
-                updated = db.update(tableName, values, BaseEntry.COLUMN_ID + SQL_PARAM, new String[]{id});
+
+                updated = db.updateWithOnConflict(tableName, values, BaseEntry.COLUMN_ID + SQL_PARAM,
+                        new String[]{id}, SQLiteDatabase.CONFLICT_NONE);
                 break;
             default:
                 throw new UnsupportedOperationException("Unable to update uri: " + uri);
@@ -227,7 +231,8 @@ public class WarrantiesProvider extends ContentProvider {
         return BASE_CONTENT_URI.buildUpon().appendPath(path).build();
     }
 
-    private Cursor queryById(@NonNull String tableName, @NonNull Uri uri, @Nullable String[] projection, @Nullable String sortOrder) {
+    private Cursor queryById(@NonNull String tableName, @NonNull Uri uri, @Nullable String[] projection,
+                             @Nullable String sortOrder) {
         Cursor cursor;
         String id = uri.getLastPathSegment();
         String[] newSelectionArgs = new String[] {id};
@@ -237,8 +242,10 @@ public class WarrantiesProvider extends ContentProvider {
         return cursor;
     }
 
-    private Cursor queryAll(@NonNull String tableName, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-        return openHelper.getReadableDatabase().query(tableName, projection, selection, selectionArgs, null, null, sortOrder);
+    private Cursor queryAll(@NonNull String tableName, @Nullable String[] projection, @Nullable String selection,
+                            @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+        return openHelper.getReadableDatabase().query(
+                tableName, projection, selection, selectionArgs, null, null, sortOrder);
     }
 
 }
