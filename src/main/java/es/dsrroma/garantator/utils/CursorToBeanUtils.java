@@ -23,7 +23,13 @@ public class CursorToBeanUtils {
         if (cursor.moveToPosition(position)) {
             return oneBean(cursor, clazz);
         } else {
-            throw new IllegalArgumentException("The cursor has no element on " + position + " position");
+            try {
+                return clazz.newInstance();
+            } catch (InstantiationException e) {
+                throw new IllegalArgumentException("Class " + clazz.getName() + " not instantiable", e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("Constructor method for " + clazz.getName() + " not accessible", e);
+            }
         }
     }
 
@@ -85,7 +91,7 @@ public class CursorToBeanUtils {
         } else if (type == long.class || type == Long.class) {
             return cursor.getLong(index);
         } else if (type == Date.class) {
-            return cursor.getString(index); // TODO parse to Date
+            return new Date(cursor.getLong(index));
         } else {
             throw new UnsupportedOperationException("Unable to get " + type + " elements.");
         }
