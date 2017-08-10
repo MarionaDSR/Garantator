@@ -4,28 +4,42 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import es.dsrroma.garantator.data.contracts.BrandContract;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
 import es.dsrroma.garantator.utils.CursorToBeanUtils;
 
+import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 
-public class AddWarrantyActivity extends AppCompatActivity {
+public class AddWarrantyActivity extends AppCompatActivity implements
+        LoaderManager.LoaderCallbacks<Cursor> {
+
+    private SimpleCursorAdapter brandAdapter;
 
     private EditText etName;
+    private AutoCompleteTextView actvBrand;
+
     private boolean editMode;
 
     private Warranty warranty;
     private Cursor cursor;
+
+    private static final int WARRANTY_LOADER_ID = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +47,13 @@ public class AddWarrantyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_warranty);
 
         etName = (EditText) findViewById(R.id.etWarrantyName);
+        actvBrand = (AutoCompleteTextView) findViewById(R.id.actvBrand);
+
+        brandAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, null,
+                new String[] {BrandContract.BrandEntry.COLUMN_NAME},
+                new int[] { android.R.id.text1 }, 0);
+        brandAdapter.setStringConversionColumn(1);
+        actvBrand.setAdapter(brandAdapter);
 
         final Uri warrantyUri = getIntent().getData();
         editMode = warrantyUri != null;
@@ -48,6 +69,7 @@ public class AddWarrantyActivity extends AppCompatActivity {
         }
 
         setListeners();
+        getSupportLoaderManager().initLoader(WARRANTY_LOADER_ID, null, this);
     }
 
     private void setListeners() {
@@ -93,8 +115,23 @@ public class AddWarrantyActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(this, BRAND_CONTENT_URI, null, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        brandAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        brandAdapter.swapCursor(null);
+    }
+
     private void addWarranty(ContentValues cv) {
-        WarrantyUpdateService.insertNewWarranty(this, cv);
+        WarrantyUpdateService.insertNewWarranty(this, WARRANTY_CONTENT_URI, cv);
         finish();
     }
 

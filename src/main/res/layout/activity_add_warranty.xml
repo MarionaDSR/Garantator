@@ -1,13 +1,22 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="es.dsrroma.garantator.AddWarrantyActivity">
 
     <EditText
         android:id="@+id/etWarrantyName"
         android:hint="@string/warranty_name_hint"
+        android:maxLines="1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-</FrameLayout>
+    <AutoCompleteTextView
+        android:id="@+id/actvBrand"
+        android:hint="@string/brand_hint"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

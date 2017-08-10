@@ -12,8 +12,6 @@ import android.support.annotation.Nullable;
 import es.dsrroma.garantator.data.contracts.BaseContract;
 import es.dsrroma.garantator.utils.NotifyUserRunnable;
 
-import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
-
 public class WarrantyUpdateService extends IntentService {
 
     private static final String TAG = WarrantyUpdateService.class.getSimpleName();
@@ -29,13 +27,14 @@ public class WarrantyUpdateService extends IntentService {
         super(TAG);
     }
 
-    public static void insertNewWarranty(Context context, ContentValues values) {
+    public static void insertNewWarranty(Context context, Uri uri, ContentValues values) {
         long now = System.currentTimeMillis();
         values.put(BaseContract.BaseEntry.COLUMN_CREATED_AT, now);
         values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
 
         Intent intent = new Intent(context, WarrantyUpdateService.class);
         intent.setAction(ACTION_INSERT);
+        intent.setData(uri);
         intent.putExtra(EXTRA_VALUES, values);
         context.startService(intent);
     }
@@ -62,7 +61,7 @@ public class WarrantyUpdateService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         if (ACTION_INSERT.equals(intent.getAction())) {
             ContentValues values = intent.getParcelableExtra(EXTRA_VALUES);
-            performInsert(values);
+            performInsert(intent.getData(), values);
         } else if (ACTION_UPDATE.equals(intent.getAction())) {
             ContentValues values = intent.getParcelableExtra(EXTRA_VALUES);
             performUpdate(intent.getData(), values);
@@ -71,9 +70,9 @@ public class WarrantyUpdateService extends IntentService {
         }
     }
 
-    private void performInsert(ContentValues values) {
+    private void performInsert(Uri uri, ContentValues values) {
         try {
-            if (getContentResolver().insert(WARRANTY_CONTENT_URI, values) == null) {
+            if (getContentResolver().insert(uri, values) == null) {
                 notifyMessage("Error inserting new warranty");
             }
         } catch (final Throwable t) {
