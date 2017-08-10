@@ -18,28 +18,33 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import es.dsrroma.garantator.data.contracts.BrandContract;
+import es.dsrroma.garantator.data.contracts.CategoryContract;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
 import es.dsrroma.garantator.utils.CursorToBeanUtils;
 
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 
 public class AddWarrantyActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private SimpleCursorAdapter brandAdapter;
+    private SimpleCursorAdapter categoryAdapter;
 
     private EditText etName;
     private AutoCompleteTextView actvBrand;
+    private AutoCompleteTextView actvCategory;
 
     private boolean editMode;
 
     private Warranty warranty;
     private Cursor cursor;
 
-    private static final int WARRANTY_LOADER_ID = 2;
+    private static final int BRAND_LOADER_ID = 2;
+    private static final int CATEGORY_LOADER_ID = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +53,19 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
         etName = (EditText) findViewById(R.id.etWarrantyName);
         actvBrand = (AutoCompleteTextView) findViewById(R.id.actvBrand);
+        actvCategory = (AutoCompleteTextView) findViewById(R.id.actvCategory);
 
         brandAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, null,
                 new String[] {BrandContract.BrandEntry.COLUMN_NAME},
                 new int[] { android.R.id.text1 }, 0);
         brandAdapter.setStringConversionColumn(1);
         actvBrand.setAdapter(brandAdapter);
+
+        categoryAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, null,
+                new String[] {CategoryContract.CategoryEntry.COLUMN_NAME},
+                new int[] { android.R.id.text1 }, 0);
+        categoryAdapter.setStringConversionColumn(1);
+        actvCategory.setAdapter(categoryAdapter);
 
         final Uri warrantyUri = getIntent().getData();
         editMode = warrantyUri != null;
@@ -69,7 +81,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         }
 
         setListeners();
-        getSupportLoaderManager().initLoader(WARRANTY_LOADER_ID, null, this);
+        getSupportLoaderManager().initLoader(BRAND_LOADER_ID, null, this);
+        getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
     }
 
     private void setListeners() {
@@ -117,17 +130,33 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, BRAND_CONTENT_URI, null, null, null, null);
+        switch (id) {
+            case BRAND_LOADER_ID:
+                return new CursorLoader(this, BRAND_CONTENT_URI, null, null, null, null);
+            case CATEGORY_LOADER_ID:
+                return new CursorLoader(this, CATEGORY_CONTENT_URI, null, null, null, null);
+        }
+        return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        brandAdapter.swapCursor(data);
+        switch (loader.getId()) {
+            case BRAND_LOADER_ID:
+                brandAdapter.swapCursor(data);
+            case CATEGORY_LOADER_ID:
+                categoryAdapter.swapCursor(data);
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        brandAdapter.swapCursor(null);
+        switch (loader.getId()) {
+            case BRAND_LOADER_ID:
+                brandAdapter.swapCursor(null);
+            case CATEGORY_LOADER_ID:
+                categoryAdapter.swapCursor(null);
+        }
     }
 
     private void addWarranty(ContentValues cv) {

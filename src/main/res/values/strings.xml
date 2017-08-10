@@ -6,6 +6,7 @@
     <string name="add_warranty_title">Add Warranty</string>
     <string name="warranty_name_hint">Warranty Name</string>
     <string name="brand_hint">Brand Name</string>
+    <string name="category_hint">Category Name</string>
 
     <string name="save">Save</string>
     <string name="edit">Edit</string>

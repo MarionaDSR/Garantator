@@ -19,4 +19,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <AutoCompleteTextView
+        android:id="@+id/actvCategory"
+        android:hint="@string/category_hint"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>
