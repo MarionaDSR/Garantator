@@ -5,6 +5,10 @@ import android.os.Parcelable;
 
 public class Category extends AbstractBaseModel {
 
+    public Category() {
+
+    }
+
     private Category(Parcel in) {
         super(in);
     }

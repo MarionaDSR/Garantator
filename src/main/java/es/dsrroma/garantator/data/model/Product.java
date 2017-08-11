@@ -10,6 +10,10 @@ public class Product extends AbstractBaseModel {
     private String model;
     private String serialNumber;
 
+    public Product() {
+
+    }
+
     private Product(Parcel in) {
         super(in);
         category = in.readParcelable(Category.class.getClassLoader());

@@ -5,6 +5,10 @@ import android.os.Parcelable;
 
 public class Brand extends AbstractBaseModel {
 
+    public Brand() {
+
+    }
+
     private Brand(Parcel in) {
         super(in);
     }
