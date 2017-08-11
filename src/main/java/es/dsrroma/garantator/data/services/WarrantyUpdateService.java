@@ -145,23 +145,44 @@ public class WarrantyUpdateService extends IntentService {
         long now = System.currentTimeMillis();
         Product product = warranty.getProduct();
         Category category = product.getCategory();
+        long categoryId = category.getId();
+        int categoryPos = -1;
         Brand brand = product.getBrand();
+        long brandId = brand.getId();
+        int brandPos = -1;
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-        ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
-                .withValues(newContentValues(category, now))
-                .build());
-        ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
-                .withValues(newContentValues(brand, now))
-                .build());
+        if (categoryId == 0) { // only insert the category if new
+            ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
+                    .withValues(newContentValues(category, now))
+                    .build());
+            categoryPos = 0;
+        }
+        if (brandId == 0) { // only insert the brand if new
+            ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
+                    .withValues(newContentValues(brand, now))
+                    .build());
+            brandPos = categoryPos + 1;
+        }
 
         ContentValues productCV = newContentValues(product, now);
         productCV.put(ProductContract.ProductEntry.COLUMN_MODEL, product.getModel());
         productCV.put(ProductContract.ProductEntry.COLUMN_SERIAL_NUMBER, product.getSerialNumber());
+        if (categoryId != 0) { // set old category id to product
+            productCV.put(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, categoryId);
+        }
+        if (brandId != 0) { // set old brand id to product
+            productCV.put(ProductContract.ProductEntry.COLUMN_BRAND_ID, brandId);
+        }
 
-        ops.add(ContentProviderOperation.newInsert(PRODUCT_CONTENT_URI)
-                .withValueBackReference(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, 0)
-                .withValueBackReference(ProductContract.ProductEntry.COLUMN_BRAND_ID, 1)
+        ContentProviderOperation.Builder productOp = ContentProviderOperation.newInsert(PRODUCT_CONTENT_URI);
+        if (categoryId == 0) { // set new category id to product
+            productOp.withValueBackReference(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, categoryPos);
+        }
+        if (brandId == 0) { // set new brand id to product
+            productOp.withValueBackReference(ProductContract.ProductEntry.COLUMN_BRAND_ID, brandPos);
+        }
+        ops.add(productOp
                 .withValues(productCV)
                 .build());
 
@@ -169,7 +190,7 @@ public class WarrantyUpdateService extends IntentService {
         warrantyCV.put(WarrantyContract.WarrantyEntry.COLUMN_START_DATE, now); // TODO set user data
 
         ops.add(ContentProviderOperation.newInsert(WARRANTY_CONTENT_URI)
-                .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, 2)
+                .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, brandPos + 1)
                 .withValues(warrantyCV)
                 .build());
 
