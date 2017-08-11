@@ -5,6 +5,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,6 +41,8 @@ public class WarrantyUpdateService extends IntentService {
     public static final String ACTION_DELETE = TAG + ".DELETE";
 
     public static final String ACTION_INSERT_BATCH = ACTION_INSERT + ".BATCH";
+    public static final String ACTION_UPDATE_BATCH = ACTION_INSERT + ".BATCH";
+    public static final String ACTION_DELETE_BATCH = ACTION_DELETE + ".BATCH";
 
     public static final String EXTRA_VALUES = TAG + ".ContentValues";
     public static final String EXTRA_WARRANTY = TAG + ".Warranty";
@@ -56,15 +59,18 @@ public class WarrantyUpdateService extends IntentService {
         context.startService(intent);
     }
 
-    private static ContentValues newContentValues(AbstractBaseModel model, long now) {
-        ContentValues values = new ContentValues();
-        values.put(BaseContract.BaseEntry.COLUMN_CREATED_AT, now);
-        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
-        if (model.getId() > 0) {
-            values.put(COLUMN_ID, model.getId());
-        }
-        values.put(COLUMN_NAME, model.getName());
-        return values;
+    public static void updateWarrantyBatch(Context context, Warranty warranty) {
+        Intent intent = new Intent(context, WarrantyUpdateService.class);
+        intent.setAction(ACTION_UPDATE_BATCH);
+        intent.putExtra(EXTRA_WARRANTY, warranty);
+        context.startService(intent);
+    }
+
+    public static void deleteWarrantyBatch(Context context, Warranty warranty) {
+        Intent intent = new Intent(context, WarrantyUpdateService.class);
+        intent.setAction(ACTION_DELETE_BATCH);
+        intent.putExtra(EXTRA_WARRANTY, warranty);
+        context.startService(intent);
     }
 
     public static void insertNewWarranty(Context context, Uri uri, ContentValues values) {
@@ -110,6 +116,12 @@ public class WarrantyUpdateService extends IntentService {
         } else if (ACTION_INSERT_BATCH.equals(intent.getAction())) {
             Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
             performInsertBatch(warranty);
+        } else if (ACTION_UPDATE_BATCH.equals(intent.getAction())) {
+            Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
+            performUpdateBatch(warranty);
+        } else if (ACTION_DELETE_BATCH.equals(intent.getAction())) {
+            Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
+            performDeleteBatch(warranty);
         }
     }
 
@@ -199,6 +211,72 @@ public class WarrantyUpdateService extends IntentService {
         } catch (final Throwable t) {
             notifyProblem(t);
         }
+    }
+
+    private void performUpdateBatch(Warranty warranty) {
+        // TODO to implement
+    }
+
+    private void performDeleteBatch(Warranty warranty) {
+        Product product = warranty.getProduct();
+
+        Category category = product.getCategory();
+        if (category != null) {
+            ArrayList<ContentProviderOperation> deleteCategoryOps = new ArrayList<>();
+            Uri categoryQuery = CATEGORY_CONTENT_URI.buildUpon().appendPath(Long.toString(category.getId())).build();
+            deleteCategoryOps.add(ContentProviderOperation.newAssertQuery(categoryQuery)
+                    .withExpectedCount(1)
+                    .build());
+            deleteCategoryOps.add(ContentProviderOperation.newDelete(categoryQuery).build());
+            try {
+                getContentResolver().applyBatch(CONTENT_AUTHORITY, deleteCategoryOps);
+            } catch (OperationApplicationException oae) {
+                // category not to be deleted
+            } catch (final Throwable t) {
+                notifyProblem(t);
+            }
+        }
+
+        Brand brand = product.getBrand();
+        if (brand != null) {
+            ArrayList<ContentProviderOperation> deleteBrandOps = new ArrayList<>();
+            Uri brandQuery = BRAND_CONTENT_URI.buildUpon().appendPath(Long.toString(brand.getId())).build();
+            deleteBrandOps.add(ContentProviderOperation.newAssertQuery(brandQuery)
+                    .withExpectedCount(1)
+                    .build());
+            deleteBrandOps.add(ContentProviderOperation.newDelete(brandQuery).build());
+
+            try {
+                getContentResolver().applyBatch(CONTENT_AUTHORITY, deleteBrandOps);
+            } catch (OperationApplicationException oae) {
+                // brand not to be deleted
+            } catch (final Throwable t) {
+                notifyProblem(t);
+            }
+        }
+
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+        Uri productQuery = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(product.getId())).build();
+        ops.add(ContentProviderOperation.newDelete(productQuery).build());
+        Uri warrantyQuery = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
+        ops.add(ContentProviderOperation.newDelete(warrantyQuery).build());
+
+        try {
+            getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
+        } catch (final Throwable t) {
+            notifyProblem(t);
+        }
+    }
+
+    private static ContentValues newContentValues(AbstractBaseModel model, long now) {
+        ContentValues values = new ContentValues();
+        values.put(BaseContract.BaseEntry.COLUMN_CREATED_AT, now);
+        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
+        if (model.getId() > 0) {
+            values.put(COLUMN_ID, model.getId());
+        }
+        values.put(COLUMN_NAME, model.getName());
+        return values;
     }
 
     private void notifyMessage(String s) {

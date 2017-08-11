@@ -21,6 +21,9 @@ import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CON
 public class DetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
+    // TODO user butterKnife
+    // TODO load show all fields
+
     private TextView tvName;
 
     private Warranty warranty;
@@ -85,7 +88,7 @@ public class DetailActivity extends AppCompatActivity implements
     }
 
     private void deleteWarranty() {
-        WarrantyUpdateService.deleteWarranty(this, getUri());
+        WarrantyUpdateService.deleteWarrantyBatch(this, warranty);
         finish();
     }
 
