@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.Brand;
 import es.dsrroma.garantator.data.model.Category;
 import es.dsrroma.garantator.data.model.Product;
@@ -34,6 +35,7 @@ import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
+import static es.dsrroma.garantator.utils.MyStringUtils.notEmpty;
 
 public class AddWarrantyActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
@@ -46,12 +48,24 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     EditText etName;
 
     @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.actvBrand)
-    AutoCompleteTextView actvBrand;
+    @BindView(R.id.etProductName)
+    EditText etProductName;
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.actvCategory)
     AutoCompleteTextView actvCategory;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.actvBrand)
+    AutoCompleteTextView actvBrand;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.etModel)
+    EditText etModel;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.etSerialNumber)
+    EditText etSerialNumber;
 
     private boolean editMode;
 
@@ -83,30 +97,53 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         final Uri warrantyUri = getIntent().getData();
         editMode = warrantyUri != null;
         if (editMode) {
+            setTitle(R.string.edit_warranty_title);
             cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
-
             if (cursor.moveToFirst()) {
-                warranty = CursorToBeanUtils.cursorToBean(cursor, 0, Warranty.class);
-                product = warranty.getProduct();
-                brand = product.getBrand();
-                category = product.getCategory();
-
-                etName.setText(warranty.getName());
+                fillWarranty();
             }
         } else { // add mode
-            warranty = new Warranty();
-            product = new Product();
-            brand = new Brand();
-            category = new Category();
-            warranty.setProduct(product);
-            product.setBrand(brand);
-            product.setCategory(category);
+            setTitle(R.string.add_warranty_title);
+            newWarranty();
         }
 
         setListeners();
 
         getSupportLoaderManager().initLoader(BRAND_LOADER_ID, null, this);
         getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
+    }
+
+    private void newWarranty() {
+        warranty = new Warranty();
+        product = new Product();
+        warranty.setProduct(product);
+        category = new Category();
+        product.setCategory(category);
+        brand = new Brand();
+        product.setBrand(brand);
+    }
+
+    private void fillWarranty() {
+        warranty = CursorToBeanUtils.cursorToBean(cursor, 0, Warranty.class);
+        etName.setText(warranty.getName());
+        product = warranty.getProduct();
+        if (product != null) {
+            etProductName.setText(product.getName());
+            category = product.getCategory();
+            if (category != null) {
+                actvCategory.setText(category.getName());
+            }
+            brand = product.getBrand();
+            if (brand != null) {
+                actvBrand.setText(notEmpty(brand.getName()));
+            }
+            etModel.setText(notEmpty(product.getModel()));
+            etSerialNumber.setText(notEmpty(product.getSerialNumber()));
+
+        } else {
+            category = new Category();
+            brand = new Brand();
+        }
     }
 
     private SimpleCursorAdapter prepareAutocompleteAdapter(final Uri uri) {
@@ -189,7 +226,13 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                     if (editMode) {
                         updateWarranty(cv);
                     } else { // add mode
-                        addWarranty(cv);
+                        warranty.setName(etName.getText().toString());
+                        product.setName(etProductName.getText().toString());
+                        product.setModel(etModel.getText().toString());
+                        product.setSerialNumber(etSerialNumber.getText().toString());
+                        brand.setName(actvBrand.getText().toString());
+                        category.setName(actvCategory.getText().toString());
+                        addWarranty();
                     }
                 }
                 return true;
@@ -228,8 +271,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         }
     }
 
-    private void addWarranty(ContentValues cv) {
-        WarrantyUpdateService.insertNewWarranty(this, WARRANTY_CONTENT_URI, cv);
+    private void addWarranty() {
+        WarrantyUpdateService.insertNewWarrantyBatch(this, warranty);
         finish();
     }
 
@@ -252,6 +295,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     private ContentValues warrantyToContentValues() {
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_NAME, warranty.getName());
+        cv.put(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, product.getId());
         return cv;
     }
 }

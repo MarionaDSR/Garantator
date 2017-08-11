@@ -1,6 +1,7 @@
 package es.dsrroma.garantator.data.services;
 
 import android.app.IntentService;
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -9,8 +10,25 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
+
 import es.dsrroma.garantator.data.contracts.BaseContract;
+import es.dsrroma.garantator.data.contracts.ProductContract;
+import es.dsrroma.garantator.data.contracts.WarrantyContract;
+import es.dsrroma.garantator.data.model.AbstractBaseModel;
+import es.dsrroma.garantator.data.model.Brand;
+import es.dsrroma.garantator.data.model.Category;
+import es.dsrroma.garantator.data.model.Product;
+import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.utils.NotifyUserRunnable;
+
+import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_ID;
+import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
+import static es.dsrroma.garantator.data.contracts.BaseContract.CONTENT_AUTHORITY;
+import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 
 public class WarrantyUpdateService extends IntentService {
 
@@ -21,10 +39,32 @@ public class WarrantyUpdateService extends IntentService {
     public static final String ACTION_UPDATE = TAG + ".UPDATE";
     public static final String ACTION_DELETE = TAG + ".DELETE";
 
+    public static final String ACTION_INSERT_BATCH = ACTION_INSERT + ".BATCH";
+
     public static final String EXTRA_VALUES = TAG + ".ContentValues";
+    public static final String EXTRA_WARRANTY = TAG + ".Warranty";
+
 
     public WarrantyUpdateService() {
         super(TAG);
+    }
+
+    public static void insertNewWarrantyBatch(Context context, Warranty warranty) {
+        Intent intent = new Intent(context, WarrantyUpdateService.class);
+        intent.setAction(ACTION_INSERT_BATCH);
+        intent.putExtra(EXTRA_WARRANTY, warranty);
+        context.startService(intent);
+    }
+
+    private static ContentValues newContentValues(AbstractBaseModel model, long now) {
+        ContentValues values = new ContentValues();
+        values.put(BaseContract.BaseEntry.COLUMN_CREATED_AT, now);
+        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
+        if (model.getId() > 0) {
+            values.put(COLUMN_ID, model.getId());
+        }
+        values.put(COLUMN_NAME, model.getName());
+        return values;
     }
 
     public static void insertNewWarranty(Context context, Uri uri, ContentValues values) {
@@ -67,6 +107,9 @@ public class WarrantyUpdateService extends IntentService {
             performUpdate(intent.getData(), values);
         } else if (ACTION_DELETE.equals(intent.getAction())) {
             performDelete(intent.getData());
+        } else if (ACTION_INSERT_BATCH.equals(intent.getAction())) {
+            Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
+            performInsertBatch(warranty);
         }
     }
 
@@ -93,6 +136,45 @@ public class WarrantyUpdateService extends IntentService {
         try {
             int count = getContentResolver().delete(uri, null, null);
             notifyMessage("Deleted " + count + " warranties");
+        } catch (final Throwable t) {
+            notifyProblem(t);
+        }
+    }
+
+    private void performInsertBatch(Warranty warranty) {
+        long now = System.currentTimeMillis();
+        Product product = warranty.getProduct();
+        Category category = product.getCategory();
+        Brand brand = product.getBrand();
+
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+        ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
+                .withValues(newContentValues(category, now))
+                .build());
+        ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
+                .withValues(newContentValues(brand, now))
+                .build());
+
+        ContentValues productCV = newContentValues(product, now);
+        productCV.put(ProductContract.ProductEntry.COLUMN_MODEL, product.getModel());
+        productCV.put(ProductContract.ProductEntry.COLUMN_SERIAL_NUMBER, product.getSerialNumber());
+
+        ops.add(ContentProviderOperation.newInsert(PRODUCT_CONTENT_URI)
+                .withValueBackReference(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, 0)
+                .withValueBackReference(ProductContract.ProductEntry.COLUMN_BRAND_ID, 1)
+                .withValues(productCV)
+                .build());
+
+        ContentValues warrantyCV = newContentValues(warranty, now);
+        warrantyCV.put(WarrantyContract.WarrantyEntry.COLUMN_START_DATE, now); // TODO set user data
+
+        ops.add(ContentProviderOperation.newInsert(WARRANTY_CONTENT_URI)
+                .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, 2)
+                .withValues(warrantyCV)
+                .build());
+
+        try {
+            getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
         } catch (final Throwable t) {
             notifyProblem(t);
         }

@@ -1,13 +1,19 @@
 <resources>
     <string name="content_authority" translatable="false">es.dsrroma.garantator</string>
 
+    <!-- titles -->
     <string name="app_name">Garantator</string>
     <string name="title_activity_detail">Warranty Detail</string>
-    <string name="add_warranty_title">Add Warranty</string>
+    <string name="add_warranty_title">New Warranty</string>
+    <string name="edit_warranty_title">Edit Warranty</string>
+    <!-- hints -->
     <string name="warranty_name_hint">Warranty Name</string>
-    <string name="brand_hint">Brand Name</string>
+    <string name="product_name_hint">Product Name</string>
     <string name="category_hint">Category Name</string>
-
+    <string name="brand_hint">Brand Name</string>
+    <string name="model_hint">Product Model</string>
+    <string name="serial_number_hint">Serial Number</string>
+    <!-- actions -->
     <string name="save">Save</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
