@@ -20,6 +20,8 @@ import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import es.dsrroma.garantator.data.model.Brand;
 import es.dsrroma.garantator.data.model.Category;
 import es.dsrroma.garantator.data.model.Product;
@@ -39,9 +41,17 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     private SimpleCursorAdapter brandAdapter;
     private SimpleCursorAdapter categoryAdapter;
 
-    private EditText etName;
-    private AutoCompleteTextView actvBrand;
-    private AutoCompleteTextView actvCategory;
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.etWarrantyName)
+    EditText etName;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.actvBrand)
+    AutoCompleteTextView actvBrand;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.actvCategory)
+    AutoCompleteTextView actvCategory;
 
     private boolean editMode;
 
@@ -60,9 +70,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_warranty);
 
-        etName = (EditText) findViewById(R.id.etWarrantyName);
-        actvBrand = (AutoCompleteTextView) findViewById(R.id.actvBrand);
-        actvCategory = (AutoCompleteTextView) findViewById(R.id.actvCategory);
+        ButterKnife.bind(this);
 
         brandAdapter = prepareAutocompleteAdapter(BRAND_CONTENT_URI);
         actvBrand.setAdapter(brandAdapter);
