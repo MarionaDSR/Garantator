@@ -23,12 +23,12 @@ import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
+import es.dsrroma.garantator.data.contracts.WarrantyViewContract;
 import es.dsrroma.garantator.data.model.Brand;
 import es.dsrroma.garantator.data.model.Category;
 import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
-import es.dsrroma.garantator.utils.CursorToBeanUtils;
 
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_ID;
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
@@ -124,7 +124,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     }
 
     private void fillWarranty() {
-        warranty = CursorToBeanUtils.cursorToBean(cursor, 0, Warranty.class);
+        warranty = WarrantyViewContract.getBeanFromCursor(cursor);
+//        warranty = CursorToBeanUtils.cursorToBean(cursor, 0, Warranty.class);
         etName.setText(warranty.getName());
         product = warranty.getProduct();
         if (product != null) {
@@ -277,6 +278,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     }
 
     private void updateWarranty(ContentValues cv) {
+        // TODO update all fields
         Uri uri = WARRANTY_CONTENT_URI.buildUpon().appendPath(warranty.getId() + "").build();
         WarrantyUpdateService.updateWarranty(this, uri, cv);
         finish();

@@ -12,20 +12,43 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import es.dsrroma.garantator.data.model.Brand;
+import es.dsrroma.garantator.data.model.Category;
+import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
 
-import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.getBeanFromCursor;
 
 public class DetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
-    // TODO user butterKnife
-    // TODO load show all fields
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvWarrantyName)
+    TextView tvWarrantyName;
 
-    private TextView tvName;
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvProductName)
+    TextView tvProductName;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvCategory)
+    TextView tvCategory;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvBrand)
+    TextView tvBrand;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvModel)
+    TextView tvModel;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvSerialNumber)
+    TextView tvSerialNumber;
 
     private Warranty warranty;
     private Cursor cursor;
@@ -37,7 +60,7 @@ public class DetailActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        tvName = (TextView) findViewById(R.id.tvName);
+        ButterKnife.bind(this);
 
         final Uri warrantyUri = getIntent().getData();
         cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
@@ -95,7 +118,7 @@ public class DetailActivity extends AppCompatActivity implements
 
     private void editWarranty() {
         Intent intent = new Intent(this, AddWarrantyActivity.class);
-        intent.setData(WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build()); // TODO probably needs view uri
+        intent.setData(getUri());
         startActivity(intent);
     }
 
@@ -105,6 +128,20 @@ public class DetailActivity extends AppCompatActivity implements
 
     private void showWarranty() {
         warranty = getBeanFromCursor(cursor);
-        tvName.setText(warranty.getName() + " - " + warranty.getProduct().getName());
+        tvWarrantyName.setText(warranty.getName());
+        Product product = warranty.getProduct();
+        if (product != null) {
+            tvProductName.setText(product.getName());
+            Category category = product.getCategory();
+            if (category != null) {
+                tvCategory.setText(category.getName());
+            }
+            Brand brand = product.getBrand();
+            if (brand != null) {
+                tvBrand.setText(brand.getName());
+            }
+            tvModel.setText(product.getModel());
+            tvSerialNumber.setText(product.getSerialNumber());
+        }
     }
 }
