@@ -18,6 +18,7 @@ import es.dsrroma.garantator.adapters.WarrantyAdapter;
 import es.dsrroma.garantator.data.model.Warranty;
 
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements
         WarrantyAdapter.OnItemClickListener,
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onItemClick(View v, int position) {
         Warranty warranty = warrantyAdapter.getItem(position);
         Intent intent = new Intent(this, DetailActivity.class);
-        Uri uri = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
+        Uri uri = WARRANTY_VIEW_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
         intent.setData(uri);
         startActivity(intent);
     }

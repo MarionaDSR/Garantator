@@ -14,9 +14,10 @@ import android.widget.TextView;
 
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
-import es.dsrroma.garantator.utils.CursorToBeanUtils;
 
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.getBeanFromCursor;
 
 public class DetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
@@ -94,16 +95,16 @@ public class DetailActivity extends AppCompatActivity implements
 
     private void editWarranty() {
         Intent intent = new Intent(this, AddWarrantyActivity.class);
-        intent.setData(getUri());
+        intent.setData(WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build()); // TODO probably needs view uri
         startActivity(intent);
     }
 
     private Uri getUri() {
-        return WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
+        return WARRANTY_VIEW_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
     }
 
     private void showWarranty() {
-        warranty = CursorToBeanUtils.cursorToBean(cursor, Warranty.class);
-        tvName.setText(warranty.getName());
+        warranty = getBeanFromCursor(cursor);
+        tvName.setText(warranty.getName() + " - " + warranty.getProduct().getName());
     }
 }

@@ -28,7 +28,7 @@ public class CategoryContract extends BaseContract {
 
     // Content Provider Constants
     public static final String CATEGORY_PATH = "category";
-    public static final int CATEGORY_CODE = BASE_CODE * 4;
+    public static final int CATEGORY_CODE = BASE_CODE * CATEGORY_BASE_CODE;
     public static final int CATEGORY_CODE_BY_ID = CATEGORY_CODE + QUERY_BY_ID;
     public static final Uri CATEGORY_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(CATEGORY_PATH).build();
 
