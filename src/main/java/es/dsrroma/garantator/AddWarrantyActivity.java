@@ -3,10 +3,13 @@ package es.dsrroma.garantator;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +18,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.BindView;
@@ -30,6 +34,7 @@ import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
+import static es.dsrroma.garantator.utils.MyStringUtils.isNotEmpty;
 import static es.dsrroma.garantator.utils.MyStringUtils.notEmpty;
 
 public class AddWarrantyActivity extends AppCompatActivity implements
@@ -39,8 +44,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     private SimpleCursorAdapter categoryAdapter;
 
     @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.etWarrantyName)
-    EditText etName;
+    @BindView(R.id.tvWarrantyName)
+    TextView tvWarrantyName;
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.etProductName)
@@ -130,7 +135,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
     private void fillWarranty() {
         warranty = WarrantyViewContract.getBeanFromCursor(cursor);
-        etName.setText(warranty.getName());
+        tvWarrantyName.setText(warranty.getName());
         product = warranty.getProduct();
         if (product != null) {
             etProductName.setText(product.getName());
@@ -238,6 +243,37 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                 }
             }
         });
+
+        etProductName.addTextChangedListener(warrantyNameFragmentTextWatcher());
+        actvBrand.addTextChangedListener(warrantyNameFragmentTextWatcher());
+        actvCategory.addTextChangedListener(warrantyNameFragmentTextWatcher());
+    }
+
+    @NonNull
+    private TextWatcher warrantyNameFragmentTextWatcher() {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String name = etProductName.getText().toString();
+                if (isNotEmpty(actvCategory.getText().toString())) {
+                    name += getString(R.string.warranty_name_separator) + actvCategory.getText();
+                }
+                if (isNotEmpty(actvBrand.getText().toString())) {
+                    name += getString(R.string.warranty_name_separator) + actvBrand.getText();
+                }
+                tvWarrantyName.setText(name);
+            }
+        };
     }
 
     @Override
@@ -252,7 +288,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         switch (id) {
             case R.id.action_done:
                 if (validateContents()) {
-                    warranty.setName(etName.getText().toString());
+                    warranty.setName(tvWarrantyName.getText().toString());
                     product.setName(etProductName.getText().toString());
                     product.setModel(etModel.getText().toString());
                     product.setSerialNumber(etSerialNumber.getText().toString());
@@ -327,9 +363,9 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
     private boolean validateContents() {
         boolean res = true;
-        if (etName.getText().toString().isEmpty()) {
+        if (etProductName.getText().toString().isEmpty()) {
             res = false;
-            String message = getString(R.string.error_empty_input, getString(R.string.warranty_name_hint));
+            String message = getString(R.string.error_empty_input, getString(R.string.product_name_hint));
             Toast.makeText(this, message, Toast.LENGTH_LONG).show(); // TODO manage errors
         }
         return res;

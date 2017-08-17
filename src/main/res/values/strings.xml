@@ -17,4 +17,6 @@
     <string name="save">Save</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <!-- add warranty -->
+    <string name="warranty_name_separator">" - "</string>
 </resources>

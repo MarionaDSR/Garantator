@@ -6,8 +6,8 @@
     android:padding="@dimen/generalPadding"
     tools:context="es.dsrroma.garantator.AddWarrantyActivity">
 
-    <EditText
-        android:id="@+id/etWarrantyName"
+    <TextView
+        android:id="@+id/tvWarrantyName"
         android:hint="@string/warranty_name_hint"
         android:maxLines="1"
         android:layout_width="match_parent"
