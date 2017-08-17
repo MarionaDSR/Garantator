@@ -269,16 +269,16 @@ public class WarrantyUpdateService extends IntentService {
 
         Uri updateProductUri = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(newProduct.getId())).build();
         ContentProviderOperation.Builder productUpdateOp = ContentProviderOperation.newUpdate(updateProductUri);
-        if (productCV.size() != 0) {
-            productUpdateOp.withValues(productCV);
-        }
         if (categoryPos != -1) {
             productUpdateOp.withValueBackReference(ProductEntry.COLUMN_CATEGORY_ID, categoryPos);
         }
         if (brandPos != -1) {
             productUpdateOp.withValueBackReference(ProductEntry.COLUMN_BRAND_ID, brandPos);
         }
-        ops.add(productUpdateOp.build());
+        if (productCV.size() != 0) {
+            productUpdateOp.withValues(productCV);
+            ops.add(productUpdateOp.build());
+        }
 
         if (warrantyCV.size() != 0) {
             Uri updateWarrantyUri = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(newWarranty.getId())).build();
