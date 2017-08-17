@@ -53,6 +53,8 @@ public class DetailActivity extends AppCompatActivity implements
     private Warranty warranty;
     private Cursor cursor;
 
+    boolean toRefresh = true;
+
     private static final int WARRANTY_LOADER_ID = 1;
 
     @Override
@@ -62,14 +64,32 @@ public class DetailActivity extends AppCompatActivity implements
 
         ButterKnife.bind(this);
 
-        final Uri warrantyUri = getIntent().getData();
-        cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
-
-        if (cursor.moveToFirst()) {
-            showWarranty();
-        }
-
+        refreshDetail();
         getSupportLoaderManager().initLoader(WARRANTY_LOADER_ID, null, this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshDetail();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        toRefresh = true;
+    }
+
+    private void refreshDetail() {
+        if (toRefresh) {
+            final Uri warrantyUri = getIntent().getData();
+            cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                showWarranty();
+            }
+            toRefresh = false;
+        }
     }
 
     @Override
