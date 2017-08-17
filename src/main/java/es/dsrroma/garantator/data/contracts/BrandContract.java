@@ -29,6 +29,7 @@ public class BrandContract extends BaseContract {
     public static final String BRAND_PATH = "brand";
     public static final int BRAND_CODE = BASE_CODE * BRAND_BASE_CODE;
     public static final int BRAND_CODE_BY_ID = BRAND_CODE + QUERY_BY_ID;
+    public static final int BRAND_CODE_BY_NAME = BRAND_CODE + QUERY_BY_NAME;
     public static final Uri BRAND_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(BRAND_PATH).build();
 
 

@@ -13,7 +13,6 @@ import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 
-import es.dsrroma.garantator.data.contracts.BaseContract;
 import es.dsrroma.garantator.data.contracts.ProductContract;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.AbstractBaseModel;
@@ -23,13 +22,18 @@ import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.utils.NotifyUserRunnable;
 
+import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_CREATED_AT;
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_ID;
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
+import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_UPDATED_AT;
 import static es.dsrroma.garantator.data.contracts.BaseContract.CONTENT_AUTHORITY;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.ProductContract.ProductEntry;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.WarrantyContract.WarrantyEntry;
+import static es.dsrroma.garantator.utils.MyStringUtils.isEmpty;
 
 public class WarrantyUpdateService extends IntentService {
 
@@ -41,11 +45,12 @@ public class WarrantyUpdateService extends IntentService {
     public static final String ACTION_DELETE = TAG + ".DELETE";
 
     public static final String ACTION_INSERT_BATCH = ACTION_INSERT + ".BATCH";
-    public static final String ACTION_UPDATE_BATCH = ACTION_INSERT + ".BATCH";
+    public static final String ACTION_UPDATE_BATCH = ACTION_UPDATE + ".BATCH";
     public static final String ACTION_DELETE_BATCH = ACTION_DELETE + ".BATCH";
 
     public static final String EXTRA_VALUES = TAG + ".ContentValues";
     public static final String EXTRA_WARRANTY = TAG + ".Warranty";
+    public static final String EXTRA_OLD_WARRANTY = TAG + ".OldWarranty";
 
 
     public WarrantyUpdateService() {
@@ -59,10 +64,11 @@ public class WarrantyUpdateService extends IntentService {
         context.startService(intent);
     }
 
-    public static void updateWarrantyBatch(Context context, Warranty warranty) {
+    public static void updateWarrantyBatch(Context context, Warranty newWarranty, Warranty oldWarranty) {
         Intent intent = new Intent(context, WarrantyUpdateService.class);
         intent.setAction(ACTION_UPDATE_BATCH);
-        intent.putExtra(EXTRA_WARRANTY, warranty);
+        intent.putExtra(EXTRA_WARRANTY, newWarranty);
+        intent.putExtra(EXTRA_OLD_WARRANTY, oldWarranty);
         context.startService(intent);
     }
 
@@ -75,8 +81,8 @@ public class WarrantyUpdateService extends IntentService {
 
     public static void insertNewWarranty(Context context, Uri uri, ContentValues values) {
         long now = System.currentTimeMillis();
-        values.put(BaseContract.BaseEntry.COLUMN_CREATED_AT, now);
-        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
+        values.put(COLUMN_CREATED_AT, now);
+        values.put(COLUMN_UPDATED_AT, now);
 
         Intent intent = new Intent(context, WarrantyUpdateService.class);
         intent.setAction(ACTION_INSERT);
@@ -87,7 +93,7 @@ public class WarrantyUpdateService extends IntentService {
 
     public static void updateWarranty(Context context, Uri uri, ContentValues values) {
         long now = System.currentTimeMillis();
-        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
+        values.put(COLUMN_UPDATED_AT, now);
 
         Intent intent = new Intent(context, WarrantyUpdateService.class);
         intent.setAction(ACTION_UPDATE);
@@ -117,8 +123,9 @@ public class WarrantyUpdateService extends IntentService {
             Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
             performInsertBatch(warranty);
         } else if (ACTION_UPDATE_BATCH.equals(intent.getAction())) {
-            Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
-            performUpdateBatch(warranty);
+            Warranty newWarranty = intent.getParcelableExtra(EXTRA_WARRANTY);
+            Warranty oldWarranty = intent.getParcelableExtra(EXTRA_OLD_WARRANTY);
+            performUpdateBatch(newWarranty, oldWarranty);
         } else if (ACTION_DELETE_BATCH.equals(intent.getAction())) {
             Warranty warranty = intent.getParcelableExtra(EXTRA_WARRANTY);
             performDeleteBatch(warranty);
@@ -199,8 +206,9 @@ public class WarrantyUpdateService extends IntentService {
                 .build());
 
         ContentValues warrantyCV = newContentValues(warranty, now);
-        warrantyCV.put(WarrantyContract.WarrantyEntry.COLUMN_START_DATE, now); // TODO set user data
-
+        if (warranty.getStartDate() != null) {
+            warrantyCV.put(WarrantyContract.WarrantyEntry.COLUMN_START_DATE, warranty.getStartDate().getTime());
+        }
         ops.add(ContentProviderOperation.newInsert(WARRANTY_CONTENT_URI)
                 .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, brandPos + 1)
                 .withValues(warrantyCV)
@@ -213,31 +221,110 @@ public class WarrantyUpdateService extends IntentService {
         }
     }
 
-    private void performUpdateBatch(Warranty warranty) {
-        // TODO to implement
+    private void performUpdateBatch(Warranty newWarranty, Warranty oldWarranty) {
+        long now = System.currentTimeMillis();
+
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+        ContentValues warrantyCV = updateContentValues(newWarranty, oldWarranty, now);
+
+        // update product // product may not be null, neither may change id
+        Product newProduct = newWarranty.getProduct();
+        Product oldProduct = oldWarranty.getProduct();
+        ContentValues productCV = updateContentValues(newProduct, oldProduct, now);
+
+        int categoryPos = -1;
+        int brandPos = -1;
+
+        // update product category
+        Category newCategory = newProduct.getCategory();
+        Category oldCategory = oldProduct.getCategory();
+        if (newCategory == null) {
+            productCV.putNull(ProductEntry.COLUMN_CATEGORY_ID);
+        } else {
+            if (newCategory.getId() <= 0) {
+                ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
+                        .withValues(newContentValues(newCategory, now))
+                        .build());
+                categoryPos = 0;
+            } else if (oldCategory == null || newCategory.getId() != oldProduct.getCategory().getId()) {
+                productCV.put(ProductEntry.COLUMN_CATEGORY_ID, newCategory.getId());
+            }
+        }
+
+        // update product brand
+        Brand newBrand = newProduct.getBrand();
+        Brand oldBrand = oldProduct.getBrand();
+        if (newBrand == null) {
+            productCV.putNull(ProductEntry.COLUMN_BRAND_ID);
+        } else {
+            if (newBrand.getId() <= 0) {
+                ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
+                        .withValues(newContentValues(newBrand, now))
+                        .build());
+                brandPos = categoryPos + 1;
+            } else if (oldBrand == null || newBrand.getId() != oldProduct.getBrand().getId()) {
+                productCV.put(ProductEntry.COLUMN_BRAND_ID, newBrand.getId());
+            }
+        }
+
+        Uri updateProductUri = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(newProduct.getId())).build();
+        ContentProviderOperation.Builder productUpdateOp = ContentProviderOperation.newUpdate(updateProductUri);
+        if (productCV.size() != 0) {
+            productUpdateOp.withValues(productCV);
+        }
+        if (categoryPos != -1) {
+            productUpdateOp.withValueBackReference(ProductEntry.COLUMN_CATEGORY_ID, categoryPos);
+        }
+        if (brandPos != -1) {
+            productUpdateOp.withValueBackReference(ProductEntry.COLUMN_BRAND_ID, brandPos);
+        }
+        ops.add(productUpdateOp.build());
+
+        if (warrantyCV.size() != 0) {
+            Uri updateWarrantyUri = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(newWarranty.getId())).build();
+            ContentProviderOperation.Builder warrantyUpdateOp = ContentProviderOperation.newUpdate(updateWarrantyUri).
+                    withValues(warrantyCV);
+            ops.add(warrantyUpdateOp.build());
+        }
+
+        try {
+            getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
+        } catch (final Throwable t) {
+            notifyProblem(t);
+        }
     }
 
     private void performDeleteBatch(Warranty warranty) {
         Product product = warranty.getProduct();
+        performDeleteCategoryBatch(product.getCategory());
+        performDeleteBrandBatch(product.getBrand());
+        performDeleteProductAndWarranty(warranty);
+    }
 
-        Category category = product.getCategory();
-        if (category != null) {
-            ArrayList<ContentProviderOperation> deleteCategoryOps = new ArrayList<>();
-            Uri categoryQuery = CATEGORY_CONTENT_URI.buildUpon().appendPath(Long.toString(category.getId())).build();
-            deleteCategoryOps.add(ContentProviderOperation.newAssertQuery(categoryQuery)
-                    .withExpectedCount(1)
-                    .build());
-            deleteCategoryOps.add(ContentProviderOperation.newDelete(categoryQuery).build());
-            try {
-                getContentResolver().applyBatch(CONTENT_AUTHORITY, deleteCategoryOps);
-            } catch (OperationApplicationException oae) {
-                // category not to be deleted
-            } catch (final Throwable t) {
-                notifyProblem(t);
-            }
+    /**
+     * Deletes the product of this warranty, and the warranty itself.
+     * @param warranty
+     */
+    private void performDeleteProductAndWarranty(Warranty warranty) {
+        Product product = warranty.getProduct();
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+        Uri productQuery = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(product.getId())).build();
+        ops.add(ContentProviderOperation.newDelete(productQuery).build());
+        Uri warrantyQuery = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
+        ops.add(ContentProviderOperation.newDelete(warrantyQuery).build());
+
+        try {
+            getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
+        } catch (final Throwable t) {
+            notifyProblem(t);
         }
+    }
 
-        Brand brand = product.getBrand();
+    /**
+     * Deletes this brand if it isn't used by any product.
+     * @param brand
+     */
+    private void performDeleteBrandBatch(Brand brand) {
         if (brand != null) {
             ArrayList<ContentProviderOperation> deleteBrandOps = new ArrayList<>();
             Uri brandQuery = BRAND_CONTENT_URI.buildUpon().appendPath(Long.toString(brand.getId())).build();
@@ -254,24 +341,82 @@ public class WarrantyUpdateService extends IntentService {
                 notifyProblem(t);
             }
         }
+    }
 
-        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-        Uri productQuery = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(product.getId())).build();
-        ops.add(ContentProviderOperation.newDelete(productQuery).build());
-        Uri warrantyQuery = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
-        ops.add(ContentProviderOperation.newDelete(warrantyQuery).build());
-
-        try {
-            getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
-        } catch (final Throwable t) {
-            notifyProblem(t);
+    /**
+     * Deletes this category if it isn't used by any product.
+     * @param category
+     */
+    private void performDeleteCategoryBatch(Category category) {
+        if (category != null) {
+            ArrayList<ContentProviderOperation> deleteCategoryOps = new ArrayList<>();
+            Uri categoryQuery = CATEGORY_CONTENT_URI.buildUpon().appendPath(Long.toString(category.getId())).build();
+            deleteCategoryOps.add(ContentProviderOperation.newAssertQuery(categoryQuery)
+                    .withExpectedCount(1)
+                    .build());
+            deleteCategoryOps.add(ContentProviderOperation.newDelete(categoryQuery).build());
+            try {
+                getContentResolver().applyBatch(CONTENT_AUTHORITY, deleteCategoryOps);
+            } catch (OperationApplicationException oae) {
+                // category not to be deleted
+            } catch (final Throwable t) {
+                notifyProblem(t);
+            }
         }
+    }
+
+    private static ContentValues updateContentValues(Warranty newWarranty, Warranty oldWarranty, long now) {
+        ContentValues values = new ContentValues();
+
+        // update warranty name
+        if (!newWarranty.getName().equals(oldWarranty.getName())) {
+            values.put(COLUMN_NAME, newWarranty.getName());
+        }
+        // update warranty startdate
+        if (newWarranty.getStartDate() == null) {
+            if (oldWarranty.getStartDate() != null) {
+                values.putNull(WarrantyEntry.COLUMN_START_DATE);
+            }
+        } else if (!newWarranty.getStartDate().equals(oldWarranty.getStartDate())) {
+            values.put(WarrantyEntry.COLUMN_START_DATE, newWarranty.getStartDate().getTime());
+        }
+
+        if (values.size() > 0) {
+            values.put(COLUMN_UPDATED_AT, now);
+        }
+        return values;
+    }
+
+    private static ContentValues updateContentValues(Product newProduct, Product oldProduct, long now) {
+        ContentValues values = new ContentValues();
+
+        // update product name
+        if (!newProduct.getName().equals(oldProduct.getName())) {
+            values.put(COLUMN_NAME, newProduct.getName());
+        }
+        // update product model
+        if (isEmpty(newProduct.getModel())) {
+            values.putNull(ProductEntry.COLUMN_MODEL);
+        } else if (!newProduct.getModel().equals(oldProduct.getModel())) {
+            values.put(ProductEntry.COLUMN_MODEL, newProduct.getModel());
+        }
+        // update product serial number
+        if (isEmpty(newProduct.getSerialNumber())) {
+            values.putNull(ProductEntry.COLUMN_SERIAL_NUMBER);
+        } else if (!newProduct.getSerialNumber().equals(oldProduct.getSerialNumber())) {
+            values.put(ProductEntry.COLUMN_SERIAL_NUMBER, newProduct.getSerialNumber());
+        }
+
+        if (values.size() > 0) {
+            values.put(COLUMN_UPDATED_AT, now);
+        }
+        return values;
     }
 
     private static ContentValues newContentValues(AbstractBaseModel model, long now) {
         ContentValues values = new ContentValues();
-        values.put(BaseContract.BaseEntry.COLUMN_CREATED_AT, now);
-        values.put(BaseContract.BaseEntry.COLUMN_UPDATED_AT, now);
+        values.put(COLUMN_CREATED_AT, now);
+        values.put(COLUMN_UPDATED_AT, now);
         if (model.getId() > 0) {
             values.put(COLUMN_ID, model.getId());
         }

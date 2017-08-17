@@ -22,13 +22,16 @@ import es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEnt
 import static es.dsrroma.garantator.data.contracts.BaseContract.BASE_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_ALL;
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_BY_ID;
+import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_BY_NAME;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE_BY_ID;
+import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE_BY_NAME;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_PATH;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BaseEntry;
 import static es.dsrroma.garantator.data.contracts.BrandContract.SQL_PARAM;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CODE;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CODE_BY_ID;
+import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CODE_BY_NAME;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_PATH;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE_BY_ID;
@@ -43,6 +46,7 @@ import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY
 public class WarrantiesProvider extends ContentProvider {
 
     public static final String NUM_PARAM = "/#";
+    public static final String STRING_PARAM = "/*";
 
     private static final UriMatcher uriMatcher = buildUriMatcher();
 
@@ -60,9 +64,11 @@ public class WarrantiesProvider extends ContentProvider {
 
         matcher.addURI(authority, BRAND_PATH, BRAND_CODE);
         matcher.addURI(authority, BRAND_PATH + NUM_PARAM, BRAND_CODE_BY_ID);
+        matcher.addURI(authority, BRAND_PATH + STRING_PARAM, BRAND_CODE_BY_NAME);
 
         matcher.addURI(authority, CATEGORY_PATH, CATEGORY_CODE);
         matcher.addURI(authority, CATEGORY_PATH + NUM_PARAM, CATEGORY_CODE_BY_ID);
+        matcher.addURI(authority, CATEGORY_PATH + STRING_PARAM, CATEGORY_CODE_BY_NAME);
 
         matcher.addURI(authority, WARRANTY_VIEW_PATH, WARRANTY_VIEW_CODE);
         matcher.addURI(authority, WARRANTY_VIEW_PATH + NUM_PARAM, WARRANTY_VIEW_CODE_BY_ID);
@@ -91,6 +97,9 @@ public class WarrantiesProvider extends ContentProvider {
                 break;
             case QUERY_BY_ID:
                 cursor = queryById(tableName, uri, projection, sortOrder);
+                break;
+            case QUERY_BY_NAME:
+                cursor = queryByName(tableName, uri, projection, sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -251,6 +260,17 @@ public class WarrantiesProvider extends ContentProvider {
         String[] newSelectionArgs = new String[] {id};
         cursor = openHelper.getReadableDatabase().query(tableName, projection,
                 BaseContract.BaseEntry.COLUMN_ID + BaseContract.SQL_PARAM,
+                newSelectionArgs, null, null, sortOrder);
+        return cursor;
+    }
+
+    private Cursor queryByName(@NonNull String tableName, @NonNull Uri uri, @Nullable String[] projection,
+                             @Nullable String sortOrder) {
+        Cursor cursor;
+        String id = uri.getLastPathSegment();
+        String[] newSelectionArgs = new String[] {id};
+        cursor = openHelper.getReadableDatabase().query(tableName, projection,
+                BaseEntry.COLUMN_NAME + BaseContract.SQL_PARAM,
                 newSelectionArgs, null, null, sortOrder);
         return cursor;
     }

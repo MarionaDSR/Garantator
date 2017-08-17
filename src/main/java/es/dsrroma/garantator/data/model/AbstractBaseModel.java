@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
-public abstract class AbstractBaseModel implements Parcelable {
+public abstract class AbstractBaseModel implements Parcelable, Cloneable {
     protected String SEP = ":";
 
     private long id;
@@ -75,7 +75,7 @@ public abstract class AbstractBaseModel implements Parcelable {
 
     @Override
     public String toString() {
-        return getClass().getName() + SEP + getId() + SEP + getName() ;
+        return getClass().getSimpleName() + SEP + getId() + SEP + getName() ;
     }
 
     @Override
@@ -90,5 +90,10 @@ public abstract class AbstractBaseModel implements Parcelable {
         writeDate(dest, createdAt);
         writeDate(dest, updatedAt);
 
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

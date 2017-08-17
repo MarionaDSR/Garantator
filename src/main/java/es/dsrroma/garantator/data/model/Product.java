@@ -77,4 +77,12 @@ public class Product extends AbstractBaseModel {
             return new Product[size];
         }
     };
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Product p = (Product)super.clone();
+        p.setBrand((Brand)getBrand().clone());
+        p.setCategory((Category)getCategory().clone());
+        return p;
+    }
 }

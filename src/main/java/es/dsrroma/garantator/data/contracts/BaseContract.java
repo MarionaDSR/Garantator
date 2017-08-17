@@ -54,6 +54,7 @@ public abstract class BaseContract {
 
     public static final int QUERY_ALL = 0;
     public static final int QUERY_BY_ID = 1;
+    public static final int QUERY_BY_NAME = 2;
 
     public static final String CONTENT_AUTHORITY = "es.dsrroma.garantator"; // TODO use resources
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);

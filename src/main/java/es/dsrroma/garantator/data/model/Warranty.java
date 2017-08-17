@@ -64,4 +64,11 @@ public class Warranty extends AbstractBaseModel {
             return new Warranty[size];
         }
     };
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Warranty w = (Warranty)super.clone();
+        w.setProduct((Product)getProduct().clone());
+        return w;
+    }
 }
