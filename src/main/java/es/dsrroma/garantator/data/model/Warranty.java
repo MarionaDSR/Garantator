@@ -52,7 +52,9 @@ public class Warranty extends AbstractBaseModel {
     }
 
     public void setStartDate(long time) {
-        this.startDate = new Date(time);
+        if (time != 0) {
+            this.startDate = new Date(time);
+        }
     }
 
     public static final Parcelable.Creator<Warranty> CREATOR = new Parcelable.Creator<Warranty>() {

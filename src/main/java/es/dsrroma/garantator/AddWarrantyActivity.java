@@ -1,5 +1,6 @@
 package es.dsrroma.garantator;
 
+import android.app.DatePickerDialog;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,16 +11,20 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,6 +34,7 @@ import es.dsrroma.garantator.data.model.Category;
 import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
+import es.dsrroma.garantator.view.DatePickerFragment;
 
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_ID;
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
@@ -38,7 +44,9 @@ import static es.dsrroma.garantator.utils.MyStringUtils.isNotEmpty;
 import static es.dsrroma.garantator.utils.MyStringUtils.notEmpty;
 
 public class AddWarrantyActivity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>,
+        DatePickerDialog.OnDateSetListener,
+        View.OnClickListener {
 
     private SimpleCursorAdapter brandAdapter;
     private SimpleCursorAdapter categoryAdapter;
@@ -67,6 +75,10 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     @BindView(R.id.etSerialNumber)
     EditText etSerialNumber;
 
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvStartDate)
+    TextView tvStartDate;
+
     private boolean editMode;
 
     private Warranty oldWarranty;
@@ -78,6 +90,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
     private long brandId;
     private long categoryId;
+    private long startDate = Long.MAX_VALUE;
 
     private Cursor cursor;
 
@@ -136,6 +149,10 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     private void fillWarranty() {
         warranty = WarrantyViewContract.getBeanFromCursor(cursor);
         tvWarrantyName.setText(warranty.getName());
+        if (warranty.getStartDate() != null) {
+            CharSequence formatted = DateFormat.format(getString(R.string.date_format), warranty.getStartDate());
+            tvStartDate.setText(formatted);
+        }
         product = warranty.getProduct();
         if (product != null) {
             etProductName.setText(product.getName());
@@ -247,6 +264,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         etProductName.addTextChangedListener(warrantyNameFragmentTextWatcher());
         actvBrand.addTextChangedListener(warrantyNameFragmentTextWatcher());
         actvCategory.addTextChangedListener(warrantyNameFragmentTextWatcher());
+
+        tvStartDate.setOnClickListener(this);
     }
 
     @NonNull
@@ -277,6 +296,43 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onClick(View v) {
+        DatePickerFragment dialogFragment = new DatePickerFragment();
+        dialogFragment.show(getSupportFragmentManager(), "datePicker");
+    }
+
+    /* Date set events from dialog */
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int day) {
+        //Set to noon on the selected day
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, year);
+        c.set(Calendar.MONTH, month);
+        c.set(Calendar.DAY_OF_MONTH, day);
+        c.set(Calendar.HOUR_OF_DAY, 12);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
+        setDateSelection(c.getTimeInMillis());
+    }
+
+    /* Manage the selected date value */
+    public void setDateSelection(long selectedTimestamp) {
+        startDate = selectedTimestamp;
+        updateDateDisplay();
+    }
+
+    private void updateDateDisplay() {
+        if (startDate == Long.MAX_VALUE) {
+            tvStartDate.setText(R.string.date_empty);
+        } else {
+            CharSequence formatted = DateFormat.format(getString(R.string.date_format), startDate);
+            tvStartDate.setText(formatted);
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.add, menu);
         return true;
@@ -289,6 +345,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             case R.id.action_done:
                 if (validateContents()) {
                     warranty.setName(tvWarrantyName.getText().toString());
+                    warranty.setStartDate(startDate);
                     product.setName(etProductName.getText().toString());
                     product.setModel(etModel.getText().toString());
                     product.setSerialNumber(etSerialNumber.getText().toString());

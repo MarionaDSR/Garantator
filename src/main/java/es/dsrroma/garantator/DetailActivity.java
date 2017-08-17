@@ -8,6 +8,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -49,6 +50,10 @@ public class DetailActivity extends AppCompatActivity implements
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.tvSerialNumber)
     TextView tvSerialNumber;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvStartDate)
+    TextView tvStartDate;
 
     private Warranty warranty;
     private Cursor cursor;
@@ -149,6 +154,10 @@ public class DetailActivity extends AppCompatActivity implements
     private void showWarranty() {
         warranty = getBeanFromCursor(cursor);
         tvWarrantyName.setText(warranty.getName());
+        if (warranty.getStartDate() != null) {
+            CharSequence formatted = DateFormat.format(getString(R.string.date_format), warranty.getStartDate());
+            tvStartDate.setText(formatted);
+        }
         Product product = warranty.getProduct();
         if (product != null) {
             tvProductName.setText(product.getName());

@@ -13,10 +13,13 @@
     <string name="brand_hint">Brand Name</string>
     <string name="model_hint">Product Model</string>
     <string name="serial_number_hint">Serial Number</string>
+    <string name="start_date_hint">Start date</string>
     <!-- actions -->
     <string name="save">Save</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <!-- add warranty -->
     <string name="warranty_name_separator">" - "</string>
+    <string name="date_empty">Not set</string>
+    <string name="date_format">MM/dd/yyyy</string>
 </resources>
