@@ -16,7 +16,7 @@ public class WarrantiesDbHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "warranties.db";
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 1;
 
     public WarrantiesDbHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -29,7 +29,6 @@ public class WarrantiesDbHelper extends SQLiteOpenHelper {
             db.execSQL(CategoryContract.SQL_CREATE_CATEGORY_TABLE);
             db.execSQL(ProductContract.SQL_CREATE_PRODUCT_TABLE);
             db.execSQL(WarrantyContract.SQL_CREATE_WARRANTY_TABLE);
-            // v2
             db.execSQL(WarrantyViewContract.SQL_CREATE_WARRANTY_VIEW);
         } catch (SQLException e) {
             Log.d("WarrantiesDbHelper", "onCreate", e);
@@ -39,9 +38,6 @@ public class WarrantiesDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // v2
-        if (newVersion == 3) {
-            db.execSQL(WarrantyViewContract.SQL_CREATE_WARRANTY_VIEW);
-        }
+        // Nothing to do by now
     }
 }
