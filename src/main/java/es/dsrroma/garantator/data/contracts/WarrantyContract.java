@@ -26,14 +26,19 @@ public class WarrantyContract extends BaseContract {
             SQL_CREATE_TABLE + WarrantyEntry.TABLE_NAME + SQL_OPEN + SQL_BASE_FIELDS + SQL_COMMA +
             WarrantyEntry.COLUMN_PRODUCT_ID + SQL_INTEGER +
                     SQL_REFERENCES + ProductEntry.TABLE_NAME + SQL_OPEN + COLUMN_ID + SQL_CLOSE + SQL_COMMA +
-            WarrantyEntry.COLUMN_START_DATE + SQL_DATE +
+            WarrantyEntry.COLUMN_START_DATE + SQL_DATE + SQL_COMMA +
+                    WarrantyEntry.COLUMN_END_DATE + SQL_DATE + SQL_COMMA +
+                    WarrantyEntry.COLUMN_LENGTH + SQL_INTEGER + SQL_COMMA +
+                    WarrantyEntry.COLUMN_PERIOD + SQL_STRING +
             SQL_CLOSE + SQL_END;
-
 
     public static final class WarrantyEntry extends BaseContract.BaseEntry {
         public static final String TABLE_NAME = "Warranties";
         public static final String COLUMN_PRODUCT_ID = "productId";
         public static final String COLUMN_START_DATE = "startDate";
+        public static final String COLUMN_END_DATE = "endDate";
+        public static final String COLUMN_LENGTH = "length";
+        public static final String COLUMN_PERIOD = "period";
     }
 
     // Content Provider Constants

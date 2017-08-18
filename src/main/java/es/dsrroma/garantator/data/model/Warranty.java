@@ -5,19 +5,26 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import static es.dsrroma.garantator.utils.MyStringUtils.isNotEmpty;
+
 public class Warranty extends AbstractBaseModel {
     private Product product;
     private long productId;
     private Date startDate;
+    private Date endDate;
+    private int length;
+    private String period;
 
     public Warranty() {
-
     }
 
     private Warranty(Parcel in) {
         super(in);
         product = in.readParcelable(Product.class.getClassLoader());
         startDate = readDate(in);
+        endDate = readDate(in);
+        length = in.readInt();
+        period = in.readString();
     }
 
     @Override
@@ -25,6 +32,9 @@ public class Warranty extends AbstractBaseModel {
         super.writeToParcel(dest, flags);
         dest.writeParcelable(product, flags);
         writeDate(dest, startDate);
+        writeDate(dest, endDate);
+        dest.writeInt(length);
+        dest.writeString(period);
     }
 
     public Product getProduct() {
@@ -55,6 +65,44 @@ public class Warranty extends AbstractBaseModel {
         if (time != 0) {
             this.startDate = new Date(time);
         }
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public void setEndDate(long time) {
+        if (time != 0) {
+            this.endDate = new Date(time);
+        }
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public void setLength(String s) {
+        if (isNotEmpty(s.toString())) {
+            setLength(Integer.parseInt(s.toString()));
+        } else {
+            setLength(0);
+        }
+    }
+
+    public String getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(String period) {
+        this.period = period;
     }
 
     public static final Parcelable.Creator<Warranty> CREATOR = new Parcelable.Creator<Warranty>() {

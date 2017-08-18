@@ -25,7 +25,10 @@ import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.Warranty
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_PRODUCT_MODEL;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_PRODUCT_NAME;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_PRODUCT_SERIAL_NUMBER;
+import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_WARRANTY_END_DATE;
+import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_WARRANTY_LENGTH;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_WARRANTY_NAME;
+import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_WARRANTY_PERIOD;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.COLUMN_WARRANTY_START_DATE;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.PRODUCT_ALIAS;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry.VIEW_NAME;
@@ -38,6 +41,9 @@ public class WarrantyViewContract extends BaseContract {
              SELECT w._id AS warrantyId,
                  w.name AS warrantyName,
                  w.startDate AS warrantyStartDate,
+                 w.endDate AS warrantyEndDate,
+                 w.length AS warrantyLength,
+                 w.period AS warrantyPeriod,
                  w.productId AS productId,
                  p.name AS productName,
                  p.model AS productModel,
@@ -58,6 +64,9 @@ public class WarrantyViewContract extends BaseContract {
         SQL_SELECT + WARRANTY_ALIAS + SQL_DOT + COLUMN_ID + SQL_AS + COLUMN_ID + SQL_COMMA +
         WARRANTY_ALIAS + SQL_DOT + COLUMN_NAME + SQL_AS + COLUMN_WARRANTY_NAME + SQL_COMMA +
         WARRANTY_ALIAS + SQL_DOT + WarrantyEntry.COLUMN_START_DATE + SQL_AS + COLUMN_WARRANTY_START_DATE + SQL_COMMA +
+        WARRANTY_ALIAS + SQL_DOT + WarrantyEntry.COLUMN_END_DATE + SQL_AS + COLUMN_WARRANTY_END_DATE + SQL_COMMA +
+        WARRANTY_ALIAS + SQL_DOT + WarrantyEntry.COLUMN_LENGTH + SQL_AS + COLUMN_WARRANTY_LENGTH + SQL_COMMA +
+        WARRANTY_ALIAS + SQL_DOT + WarrantyEntry.COLUMN_PERIOD + SQL_AS + COLUMN_WARRANTY_PERIOD + SQL_COMMA +
         WARRANTY_ALIAS + SQL_DOT + WarrantyEntry.COLUMN_PRODUCT_ID + SQL_AS + COLUMN_PRODUCT_ID + SQL_COMMA +
         PRODUCT_ALIAS + SQL_DOT + COLUMN_NAME + SQL_AS + COLUMN_PRODUCT_NAME + SQL_COMMA +
         PRODUCT_ALIAS + SQL_DOT + ProductEntry.COLUMN_MODEL + SQL_AS + COLUMN_PRODUCT_MODEL + SQL_COMMA +
@@ -83,6 +92,9 @@ public class WarrantyViewContract extends BaseContract {
 
         public static final String COLUMN_WARRANTY_NAME = "warrantyName";
         public static final String COLUMN_WARRANTY_START_DATE = "warrantyStartDate";
+        public static final String COLUMN_WARRANTY_END_DATE = "warrantyEndDate";
+        public static final String COLUMN_WARRANTY_LENGTH = "warrantyLength";
+        public static final String COLUMN_WARRANTY_PERIOD = "warrantyPeriod";
         public static final String COLUMN_PRODUCT_ID = "productId";
         public static final String COLUMN_PRODUCT_NAME = "productName";
         public static final String COLUMN_PRODUCT_MODEL = "productModel";
@@ -99,6 +111,9 @@ public class WarrantyViewContract extends BaseContract {
             w.setId(c.getLong(c.getColumnIndex(COLUMN_ID)));
             w.setName(c.getString(c.getColumnIndex(COLUMN_WARRANTY_NAME)));
             w.setStartDate(c.getLong(c.getColumnIndex(COLUMN_WARRANTY_START_DATE)));
+            w.setEndDate(c.getLong(c.getColumnIndex(COLUMN_WARRANTY_END_DATE)));
+            w.setLength(c.getInt(c.getColumnIndex(COLUMN_WARRANTY_LENGTH)));
+            w.setPeriod(c.getString(c.getColumnIndex(COLUMN_WARRANTY_PERIOD)));
             Product p = new Product();
             p.setId(c.getLong(c.getColumnIndex(COLUMN_PRODUCT_ID)));
             p.setName(c.getString(c.getColumnIndex(COLUMN_PRODUCT_NAME)));

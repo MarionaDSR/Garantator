@@ -21,10 +21,11 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Calendar;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,13 +41,14 @@ import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
+import static es.dsrroma.garantator.utils.MyDateUtils.calculateExpirationDate;
+import static es.dsrroma.garantator.utils.MyDateUtils.getNoonTime;
 import static es.dsrroma.garantator.utils.MyStringUtils.isNotEmpty;
 import static es.dsrroma.garantator.utils.MyStringUtils.notEmpty;
 
 public class AddWarrantyActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>,
-        DatePickerDialog.OnDateSetListener,
-        View.OnClickListener {
+        DatePickerDialog.OnDateSetListener {
 
     private SimpleCursorAdapter brandAdapter;
     private SimpleCursorAdapter categoryAdapter;
@@ -78,6 +80,18 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.tvStartDate)
     TextView tvStartDate;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.etWarrantyLength)
+    EditText etWarrantyLength;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.spWarrantyPeriod)
+    Spinner spWarrantyPeriod;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvEndDate)
+    TextView tvEndDate;
 
     private boolean editMode;
 
@@ -118,7 +132,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             setTitle(R.string.edit_warranty_title);
             cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
             if (cursor.moveToFirst()) {
-                fillWarranty();
+                warranty = WarrantyViewContract.getBeanFromCursor(cursor);
                 try {
                     oldWarranty = (Warranty)warranty.clone();
                 } catch (CloneNotSupportedException e) {
@@ -129,6 +143,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             setTitle(R.string.add_warranty_title);
             newWarranty();
         }
+        fillWarranty();
 
         setListeners();
 
@@ -144,15 +159,25 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         product.setCategory(category);
         brand = new Brand();
         product.setBrand(brand);
+        // set default values
+        warranty.setStartDate(getNoonTime(new Date()));
+        warranty.setLength(2); // TODO extract
+        warranty.setPeriod("Y"); // TODO extact
     }
 
     private void fillWarranty() {
-        warranty = WarrantyViewContract.getBeanFromCursor(cursor);
         tvWarrantyName.setText(warranty.getName());
         if (warranty.getStartDate() != null) {
             CharSequence formatted = DateFormat.format(getString(R.string.date_format), warranty.getStartDate());
             tvStartDate.setText(formatted);
         }
+        if (warranty.getEndDate() != null) {
+            CharSequence formatted = DateFormat.format(getString(R.string.date_format), warranty.getEndDate());
+            tvEndDate.setText(formatted);
+        }
+        etWarrantyLength.setText(Integer.toString(warranty.getLength()));
+        spWarrantyPeriod.setSelection(getPeriodPosition(warranty.getPeriod()));
+
         product = warranty.getProduct();
         if (product != null) {
             etProductName.setText(product.getName());
@@ -195,27 +220,104 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     }
 
     private void setListeners() {
-        actvBrand.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    String newBrand = actvBrand.getText().toString();
-                    Uri brandUri = BRAND_CONTENT_URI.buildUpon().appendPath(newBrand).build();
-                    brand.setName(newBrand);
+        actvBrand.setOnFocusChangeListener(brandOnFocusChangeListener());
+        actvCategory.setOnFocusChangeListener(categoryOnFocusChangeListener());
 
-                    Cursor brandCursor = getContentResolver().query(brandUri, null, null, null, null, null);
-                    if (brandCursor.moveToNext()) {
-                        brandId = brandCursor.getLong(brandCursor.getColumnIndex(COLUMN_ID));
-                        brand.setId(brandId);
-                    }
-                    Toast.makeText(getApplicationContext(), brand.toString(), Toast.LENGTH_SHORT).show();
-                } else {
-                    brandId = -1;
+        actvBrand.setOnItemClickListener(brandOnItemClickListener());
+        actvCategory.setOnItemClickListener(categoryOnItemClickListener());
+
+        etProductName.addTextChangedListener(warrantyNameFragmentTextWatcher());
+        actvBrand.addTextChangedListener(warrantyNameFragmentTextWatcher());
+        actvCategory.addTextChangedListener(warrantyNameFragmentTextWatcher());
+
+        tvStartDate.setOnClickListener(startDateOnClickListener());
+        etWarrantyLength.addTextChangedListener(lengthTextChangedListener());
+        spWarrantyPeriod.setOnItemSelectedListener(periodOnItemSelectedListener());
+    }
+
+    @NonNull
+    private View.OnClickListener startDateOnClickListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatePickerFragment dialogFragment = new DatePickerFragment();
+                dialogFragment.show(getSupportFragmentManager(), "datePicker");
+            }
+        };
+    }
+
+    @NonNull
+    private AdapterView.OnItemSelectedListener periodOnItemSelectedListener() {
+        return new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                warranty.setPeriod(getResources().getStringArray(R.array.warranty_period_values)[position]);
+                refreshEndDate();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        };
+    }
+
+    @NonNull
+    private TextWatcher lengthTextChangedListener() {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                warranty.setLength(s.toString());
+                refreshEndDate();
+            }
+        };
+    }
+
+    @NonNull
+    private AdapterView.OnItemClickListener categoryOnItemClickListener() {
+        return new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor cursor = (Cursor)parent.getItemAtPosition(position);
+                if (cursor.moveToPosition(position)) {
+                    String name = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
+                    category.setName(name);
+                    category.setId(id);
+                    categoryId = id;
                 }
             }
-        });
+        };
+    }
 
-        actvCategory.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+    @NonNull
+    private AdapterView.OnItemClickListener brandOnItemClickListener() {
+        return new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor cursor = (Cursor)parent.getItemAtPosition(position);
+                if (cursor.moveToPosition(position)) {
+                    String name = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
+                    brand.setName(name);
+                    brand.setId(id);
+                    brandId = id;
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private View.OnFocusChangeListener categoryOnFocusChangeListener() {
+        return new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
@@ -228,44 +330,33 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                         categoryId = categoryCursor.getLong(categoryCursor.getColumnIndex(COLUMN_ID));
                         category.setId(categoryId);
                     }
-                    Toast.makeText(getApplicationContext(), category.toString(), Toast.LENGTH_SHORT).show();
                 } else {
                     categoryId = -1;
                 }
             }
-        });
+        };
+    }
 
-        actvBrand.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    @NonNull
+    private View.OnFocusChangeListener brandOnFocusChangeListener() {
+        return new View.OnFocusChangeListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = (Cursor)parent.getItemAtPosition(position);
-                if (cursor.moveToPosition(position)) {
-                    String name = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
-                    brand.setName(name);
-                    brand.setId(id);
-                    brandId = id;
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    String newBrand = actvBrand.getText().toString();
+                    Uri brandUri = BRAND_CONTENT_URI.buildUpon().appendPath(newBrand).build();
+                    brand.setName(newBrand);
+
+                    Cursor brandCursor = getContentResolver().query(brandUri, null, null, null, null, null);
+                    if (brandCursor.moveToNext()) {
+                        brandId = brandCursor.getLong(brandCursor.getColumnIndex(COLUMN_ID));
+                        brand.setId(brandId);
+                    }
+                } else {
+                    brandId = -1;
                 }
             }
-        });
-
-        actvCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = (Cursor)parent.getItemAtPosition(position);
-                if (cursor.moveToPosition(position)) {
-                    String name = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
-                    category.setName(name);
-                    category.setId(id);
-                    categoryId = id;
-                }
-            }
-        });
-
-        etProductName.addTextChangedListener(warrantyNameFragmentTextWatcher());
-        actvBrand.addTextChangedListener(warrantyNameFragmentTextWatcher());
-        actvCategory.addTextChangedListener(warrantyNameFragmentTextWatcher());
-
-        tvStartDate.setOnClickListener(this);
+        };
     }
 
     @NonNull
@@ -295,40 +386,33 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         };
     }
 
-    @Override
-    public void onClick(View v) {
-        DatePickerFragment dialogFragment = new DatePickerFragment();
-        dialogFragment.show(getSupportFragmentManager(), "datePicker");
-    }
-
     /* Date set events from dialog */
     @Override
     public void onDateSet(DatePicker view, int year, int month, int day) {
-        //Set to noon on the selected day
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.YEAR, year);
-        c.set(Calendar.MONTH, month);
-        c.set(Calendar.DAY_OF_MONTH, day);
-        c.set(Calendar.HOUR_OF_DAY, 12);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-
-        setDateSelection(c.getTimeInMillis());
+        setDateSelection(getNoonTime(year, month, day));
     }
 
     /* Manage the selected date value */
     public void setDateSelection(long selectedTimestamp) {
         startDate = selectedTimestamp;
-        updateDateDisplay();
+        warranty.setStartDate(selectedTimestamp);
+        updateDateDisplay(startDate, tvStartDate);
+        refreshEndDate();
     }
 
-    private void updateDateDisplay() {
-        if (startDate == Long.MAX_VALUE) {
-            tvStartDate.setText(R.string.date_empty);
+    private void refreshEndDate() {
+        calculateExpirationDate(warranty);
+        if (warranty.getEndDate() != null) {
+            updateDateDisplay(warranty.getEndDate().getTime(), tvEndDate);
+        }
+    }
+
+    private void updateDateDisplay(long time, TextView tv) {
+        if (time == Long.MAX_VALUE) {
+            tv.setText(R.string.date_empty);
         } else {
-            CharSequence formatted = DateFormat.format(getString(R.string.date_format), startDate);
-            tvStartDate.setText(formatted);
+            CharSequence formatted = DateFormat.format(getString(R.string.date_format), time);
+            tv.setText(formatted);
         }
     }
 
@@ -345,7 +429,6 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             case R.id.action_done:
                 if (validateContents()) {
                     warranty.setName(tvWarrantyName.getText().toString());
-                    warranty.setStartDate(startDate);
                     product.setName(etProductName.getText().toString());
                     product.setModel(etModel.getText().toString());
                     product.setSerialNumber(etSerialNumber.getText().toString());
@@ -426,5 +509,15 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             Toast.makeText(this, message, Toast.LENGTH_LONG).show(); // TODO manage errors
         }
         return res;
+    }
+
+    private int getPeriodPosition(String period) {
+        String[] values = getResources().getStringArray(R.array.warranty_period_values);
+        for (int i = 0; i < values.length; i ++) {
+            if (values[i].equals(period)) {
+                return i;
+            }
+        }
+        return -1; // Not possible
     }
 }

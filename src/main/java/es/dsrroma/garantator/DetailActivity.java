@@ -55,6 +55,18 @@ public class DetailActivity extends AppCompatActivity implements
     @BindView(R.id.tvStartDate)
     TextView tvStartDate;
 
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvWarrantyLength)
+    TextView tvWarrantyLength;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvWarrantyPeriod)
+    TextView tvWarrantyPeriod;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.tvEndDate)
+    TextView tvEndDate;
+
     private Warranty warranty;
     private Cursor cursor;
 
@@ -158,6 +170,13 @@ public class DetailActivity extends AppCompatActivity implements
             CharSequence formatted = DateFormat.format(getString(R.string.date_format), warranty.getStartDate());
             tvStartDate.setText(formatted);
         }
+        if (warranty.getEndDate() != null) {
+            CharSequence formatted = DateFormat.format(getString(R.string.date_format), warranty.getEndDate());
+            tvEndDate.setText(formatted);
+        }
+        tvWarrantyLength.setText(Integer.toString(warranty.getLength()));
+        tvWarrantyPeriod.setText(getPeriodLabel(warranty.getPeriod()));
+
         Product product = warranty.getProduct();
         if (product != null) {
             tvProductName.setText(product.getName());
@@ -172,5 +191,16 @@ public class DetailActivity extends AppCompatActivity implements
             tvModel.setText(product.getModel());
             tvSerialNumber.setText(product.getSerialNumber());
         }
+    }
+
+    private String getPeriodLabel(String period) {
+        String[] values = getResources().getStringArray(R.array.warranty_period_values);
+        String[] labels = getResources().getStringArray(R.array.warranty_period_labels);
+        for (int i = 0; i < values.length; i ++) {
+            if (values[i].equals(period)) {
+                return labels[i];
+            }
+        }
+        return ""; // Not possible
     }
 }

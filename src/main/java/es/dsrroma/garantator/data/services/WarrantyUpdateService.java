@@ -207,8 +207,15 @@ public class WarrantyUpdateService extends IntentService {
 
         ContentValues warrantyCV = newContentValues(warranty, now);
         if (warranty.getStartDate() != null) {
-            warrantyCV.put(WarrantyContract.WarrantyEntry.COLUMN_START_DATE, warranty.getStartDate().getTime());
+            warrantyCV.put(WarrantyEntry.COLUMN_START_DATE, warranty.getStartDate().getTime());
         }
+        if (warranty.getEndDate() != null) {
+            warrantyCV.put(WarrantyEntry.COLUMN_END_DATE, warranty.getEndDate().getTime());
+        }
+        warrantyCV.put(WarrantyEntry.COLUMN_LENGTH, warranty.getLength());
+        warrantyCV.put(WarrantyEntry.COLUMN_PERIOD, warranty.getPeriod());
+
+
         ops.add(ContentProviderOperation.newInsert(WARRANTY_CONTENT_URI)
                 .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, brandPos + 1)
                 .withValues(warrantyCV)
@@ -379,6 +386,22 @@ public class WarrantyUpdateService extends IntentService {
             }
         } else if (!newWarranty.getStartDate().equals(oldWarranty.getStartDate())) {
             values.put(WarrantyEntry.COLUMN_START_DATE, newWarranty.getStartDate().getTime());
+        }
+        // update warranty enddate
+        if (newWarranty.getEndDate() == null) {
+            if (oldWarranty.getEndDate() != null) {
+                values.putNull(WarrantyEntry.COLUMN_END_DATE);
+            }
+        } else if (!newWarranty.getEndDate().equals(oldWarranty.getEndDate())) {
+            values.put(WarrantyEntry.COLUMN_END_DATE, newWarranty.getEndDate().getTime());
+        }
+        // update warranty length
+        if (newWarranty.getLength() != oldWarranty.getLength()) {
+            values.put(WarrantyEntry.COLUMN_LENGTH, newWarranty.getLength());
+        }
+        // update warranty period
+        if (!newWarranty.getPeriod().equals(oldWarranty.getPeriod())) {
+            values.put(WarrantyEntry.COLUMN_PERIOD, newWarranty.getPeriod());
         }
 
         if (values.size() > 0) {

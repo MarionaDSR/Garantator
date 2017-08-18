@@ -14,6 +14,7 @@
     <string name="model_hint">Product Model</string>
     <string name="serial_number_hint">Serial Number</string>
     <string name="start_date_hint">Start date</string>
+    <string name="end_date_hint">End date</string>
     <!-- actions -->
     <string name="save">Save</string>
     <string name="edit">Edit</string>
@@ -22,4 +23,14 @@
     <string name="warranty_name_separator">" - "</string>
     <string name="date_empty">Not set</string>
     <string name="date_format">MM/dd/yyyy</string>
+    <string-array name="warranty_period_labels">
+        <item>days</item>
+        <item>months</item>
+        <item>years</item>
+    </string-array>
+    <string-array name="warranty_period_values" translatable="false">
+        <item>D</item>
+        <item>M</item>
+        <item>Y</item>
+    </string-array>
 </resources>
