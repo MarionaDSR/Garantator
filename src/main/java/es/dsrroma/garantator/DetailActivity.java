@@ -60,10 +60,6 @@ public class DetailActivity extends AppCompatActivity implements
     TextView tvWarrantyLength;
 
     @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.tvWarrantyPeriod)
-    TextView tvWarrantyPeriod;
-
-    @SuppressWarnings("WeakerAccess")
     @BindView(R.id.tvEndDate)
     TextView tvEndDate;
 
@@ -174,8 +170,7 @@ public class DetailActivity extends AppCompatActivity implements
             CharSequence formatted = DateFormat.format(getString(R.string.date_format), warranty.getEndDate());
             tvEndDate.setText(formatted);
         }
-        tvWarrantyLength.setText(Integer.toString(warranty.getLength()));
-        tvWarrantyPeriod.setText(getPeriodLabel(warranty.getPeriod()));
+        tvWarrantyLength.setText(warranty.getLength() + " " + getPeriodLabel(warranty.getPeriod()));
 
         Product product = warranty.getProduct();
         if (product != null) {
