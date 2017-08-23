@@ -13,8 +13,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import es.dsrroma.garantator.data.contracts.BaseContract;
+import es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry;
 import es.dsrroma.garantator.data.contracts.BrandContract.BrandEntry;
 import es.dsrroma.garantator.data.contracts.CategoryContract.CategoryEntry;
+import es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry;
 import es.dsrroma.garantator.data.contracts.ProductContract.ProductEntry;
 import es.dsrroma.garantator.data.contracts.WarrantyContract.WarrantyEntry;
 import es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry;
@@ -27,7 +29,6 @@ import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE_BY_NAME;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_PATH;
-import static es.dsrroma.garantator.data.contracts.BrandContract.BaseEntry;
 import static es.dsrroma.garantator.data.contracts.BrandContract.SQL_PARAM;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CODE;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CODE_BY_ID;
@@ -36,7 +37,6 @@ import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_PAT
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CODE;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_PATH;
-import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_PATH;
