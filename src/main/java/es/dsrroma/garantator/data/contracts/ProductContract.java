@@ -25,7 +25,7 @@ public class ProductContract extends BaseContract {
          );
      */
     public static final String SQL_CREATE_PRODUCT_TABLE =
-            SQL_CREATE_TABLE + ProductEntry.TABLE_NAME + SQL_OPEN + SQL_BASE_FIELDS + SQL_COMMA +
+            SQL_CREATE_TABLE + ProductEntry.TABLE_NAME + SQL_OPEN + SQL_BASE_ID_NAME_FIELDS + SQL_COMMA +
             ProductEntry.COLUMN_CATEGORY_ID + SQL_INTEGER +
                     SQL_REFERENCES + CategoryEntry.TABLE_NAME + SQL_OPEN + CategoryEntry.COLUMN_ID + SQL_CLOSE + SQL_COMMA +
             ProductEntry.COLUMN_BRAND_ID + SQL_INTEGER +

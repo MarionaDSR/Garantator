@@ -18,7 +18,7 @@ public class BrandContract extends BaseContract {
          );
      */
     public static final String SQL_CREATE_BRAND_TABLE =
-            SQL_CREATE_TABLE + BrandEntry.TABLE_NAME + SQL_OPEN + SQL_BASE_FIELDS +
+            SQL_CREATE_TABLE + BrandEntry.TABLE_NAME + SQL_OPEN + SQL_BASE_ID_NAME_FIELDS +
             SQL_CLOSE + SQL_END;
 
     public static final class BrandEntry extends BaseContract.BaseEntry {

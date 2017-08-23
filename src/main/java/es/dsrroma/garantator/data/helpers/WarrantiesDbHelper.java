@@ -8,6 +8,7 @@ import android.util.Log;
 
 import es.dsrroma.garantator.data.contracts.BrandContract;
 import es.dsrroma.garantator.data.contracts.CategoryContract;
+import es.dsrroma.garantator.data.contracts.PictureContract;
 import es.dsrroma.garantator.data.contracts.ProductContract;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.contracts.WarrantyViewContract;
@@ -30,6 +31,7 @@ public class WarrantiesDbHelper extends SQLiteOpenHelper {
             db.execSQL(ProductContract.SQL_CREATE_PRODUCT_TABLE);
             db.execSQL(WarrantyContract.SQL_CREATE_WARRANTY_TABLE);
             db.execSQL(WarrantyViewContract.SQL_CREATE_WARRANTY_VIEW);
+            db.execSQL(PictureContract.SQL_CREATE_PICTURE_TABLE);
         } catch (SQLException e) {
             Log.d("WarrantiesDbHelper", "onCreate", e);
             throw e;

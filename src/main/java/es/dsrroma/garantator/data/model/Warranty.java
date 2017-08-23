@@ -3,7 +3,9 @@ package es.dsrroma.garantator.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static es.dsrroma.garantator.utils.MyStringUtils.isNotEmpty;
 
@@ -14,6 +16,7 @@ public class Warranty extends AbstractBaseModel {
     private Date endDate;
     private int length;
     private String period;
+    private List<Picture> pictures = new ArrayList<>();
 
     public Warranty() {
     }
@@ -25,6 +28,7 @@ public class Warranty extends AbstractBaseModel {
         endDate = readDate(in);
         length = in.readInt();
         period = in.readString();
+        in.readTypedList(pictures, Picture.CREATOR);
     }
 
     @Override
@@ -35,6 +39,7 @@ public class Warranty extends AbstractBaseModel {
         writeDate(dest, endDate);
         dest.writeInt(length);
         dest.writeString(period);
+        dest.writeTypedList(pictures);
     }
 
     public Product getProduct() {
@@ -105,6 +110,14 @@ public class Warranty extends AbstractBaseModel {
         this.period = period;
     }
 
+    public List<Picture> getPictures() {
+        return pictures;
+    }
+
+    public void setPictures(List<Picture> pictures) {
+        this.pictures = pictures;
+    }
+
     public static final Parcelable.Creator<Warranty> CREATOR = new Parcelable.Creator<Warranty>() {
         public Warranty createFromParcel(Parcel in) {
             return new Warranty(in);
@@ -119,6 +132,11 @@ public class Warranty extends AbstractBaseModel {
     public Object clone() throws CloneNotSupportedException {
         Warranty w = (Warranty)super.clone();
         w.setProduct((Product)getProduct().clone());
+        List<Picture> pictures = getPictures();
+        List<Picture> clonedPictures = new ArrayList<>();
+        for (Picture picture : pictures) {
+            clonedPictures.add((Picture)picture.clone());
+        }
         return w;
     }
 }

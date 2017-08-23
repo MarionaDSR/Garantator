@@ -23,7 +23,7 @@ public class WarrantyContract extends BaseContract {
          );
      */
     public static final String SQL_CREATE_WARRANTY_TABLE =
-            SQL_CREATE_TABLE + WarrantyEntry.TABLE_NAME + SQL_OPEN + SQL_BASE_FIELDS + SQL_COMMA +
+            SQL_CREATE_TABLE + WarrantyEntry.TABLE_NAME + SQL_OPEN + SQL_BASE_ID_NAME_FIELDS + SQL_COMMA +
             WarrantyEntry.COLUMN_PRODUCT_ID + SQL_INTEGER +
                     SQL_REFERENCES + ProductEntry.TABLE_NAME + SQL_OPEN + COLUMN_ID + SQL_CLOSE + SQL_COMMA +
             WarrantyEntry.COLUMN_START_DATE + SQL_DATE + SQL_COMMA +

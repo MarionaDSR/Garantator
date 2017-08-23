@@ -61,15 +61,9 @@ public class CursorToBeanUtils {
     private static <T> void setValue(Cursor cursor, String column, Class<T> clazz, T bean) {
         try {
             String fieldName = (column.startsWith("_")) ? column.substring(1) : column; // TODO
-            Field field;
-            try {
-                field = clazz.getDeclaredField(fieldName);
-            } catch(NoSuchFieldException e) {
-                try {
-                    field = clazz.getSuperclass().getDeclaredField(fieldName);
-                } catch(NoSuchFieldException e2) {
-                    throw new IllegalArgumentException("No field for column " + column + " in " + clazz.getName(), e2);
-                }
+            Field field = getFieldFromClass(clazz, fieldName);
+            if (field == null) {
+                throw new IllegalArgumentException("No field for column " + column + " in " + clazz.getName());
             }
             Method setter = getSetter(fieldName, field, clazz);
             Object value = getFieldValue(cursor, column, field);
@@ -79,6 +73,19 @@ public class CursorToBeanUtils {
         } catch(IllegalAccessException e) {
             throw new IllegalArgumentException("setter method for " + column + " not accessible", e);
         }
+    }
+
+    private static <T> Field getFieldFromClass(Class<T> clazz, String fieldName) {
+        if (clazz == null) {
+            return null;
+        }
+        Field field;
+        try {
+            field = clazz.getDeclaredField(fieldName);
+        } catch(NoSuchFieldException e) {
+            field = getFieldFromClass(clazz.getSuperclass(), fieldName);
+        }
+        return field;
     }
 
     private static <T> Object getFieldValue(Cursor cursor, String column, Field field) {
