@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="cardPadding">4dp</dimen>
     <dimen name="generalPadding">16dp</dimen>
     <dimen name="progressBarSize">42dp</dimen>
     <dimen name="fab_margin">16dp</dimen>

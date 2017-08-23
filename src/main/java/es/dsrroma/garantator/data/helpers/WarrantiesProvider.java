@@ -33,6 +33,10 @@ import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_COD
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CODE_BY_NAME;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_PATH;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CODE;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CODE_BY_ID;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_PATH;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_PATH;
@@ -42,6 +46,7 @@ import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_PAT
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CODE;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_PATH;
+
 
 public class WarrantiesProvider extends ContentProvider {
 
@@ -72,6 +77,9 @@ public class WarrantiesProvider extends ContentProvider {
 
         matcher.addURI(authority, WARRANTY_VIEW_PATH, WARRANTY_VIEW_CODE);
         matcher.addURI(authority, WARRANTY_VIEW_PATH + NUM_PARAM, WARRANTY_VIEW_CODE_BY_ID);
+
+        matcher.addURI(authority, PICTURE_PATH, PICTURE_CODE);
+        matcher.addURI(authority, PICTURE_PATH + NUM_PARAM, PICTURE_CODE_BY_ID);
 
         return matcher;
     }
@@ -222,6 +230,9 @@ public class WarrantiesProvider extends ContentProvider {
             case WARRANTY_VIEW_CODE:
                 tableName = WarrantyViewEntry.VIEW_NAME;
                 break;
+            case PICTURE_CODE:
+                tableName = PictureEntry.TABLE_NAME;
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown code: " + code);
         }
@@ -246,6 +257,9 @@ public class WarrantiesProvider extends ContentProvider {
                 break;
             case WARRANTY_VIEW_CODE:
                 path = WARRANTY_VIEW_PATH;
+                break;
+            case PICTURE_CODE:
+                path = PICTURE_PATH;
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown code: " + code);
