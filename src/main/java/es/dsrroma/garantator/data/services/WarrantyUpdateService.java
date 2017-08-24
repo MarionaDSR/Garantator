@@ -12,12 +12,16 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import es.dsrroma.garantator.data.contracts.PictureContract;
 import es.dsrroma.garantator.data.contracts.ProductContract;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
+import es.dsrroma.garantator.data.model.AbstractBaseIdModel;
 import es.dsrroma.garantator.data.model.AbstractBaseModel;
 import es.dsrroma.garantator.data.model.Brand;
 import es.dsrroma.garantator.data.model.Category;
+import es.dsrroma.garantator.data.model.Picture;
 import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.utils.NotifyUserRunnable;
@@ -29,10 +33,13 @@ import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN
 import static es.dsrroma.garantator.data.contracts.BaseContract.CONTENT_AUTHORITY;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.ProductContract.ProductEntry;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WarrantyEntry;
+import static es.dsrroma.garantator.data.helpers.WarrantiesProvider.WARRANTY_FILTER;
 import static es.dsrroma.garantator.utils.MyStringUtils.isEmpty;
 
 public class WarrantyUpdateService extends IntentService {
@@ -183,6 +190,9 @@ public class WarrantyUpdateService extends IntentService {
                     .build());
             brandPos = categoryPos + 1;
         }
+        int productPos = brandPos + 1;
+        int warrantyPos = productPos + 1;
+
 
         ContentValues productCV = newContentValues(product, now);
         productCV.put(ProductContract.ProductEntry.COLUMN_MODEL, product.getModel());
@@ -217,9 +227,20 @@ public class WarrantyUpdateService extends IntentService {
 
 
         ops.add(ContentProviderOperation.newInsert(WARRANTY_CONTENT_URI)
-                .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, brandPos + 1)
+                .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, productPos)
                 .withValues(warrantyCV)
                 .build());
+
+        List<Picture> pictures = warranty.getPictures();
+        for (Picture picture: pictures) {
+            ContentValues pictureCV = newContentValuesNoName(picture, now);
+            pictureCV.put(PictureEntry.COLUMN_FILE_NAME, picture.getFileName());
+            pictureCV.put(PictureEntry.COLUMN_POSITION, picture.getPosition());
+            ops.add(ContentProviderOperation.newInsert(PICTURE_CONTENT_URI)
+                    .withValueBackReference(PictureContract.PictureEntry.COLUMN_WARRANTY_ID, warrantyPos)
+                    .withValues(pictureCV)
+                    .build());
+        }
 
         try {
             getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
@@ -274,6 +295,8 @@ public class WarrantyUpdateService extends IntentService {
             }
         }
 
+        // update pictures TODO
+
         Uri updateProductUri = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(newProduct.getId())).build();
         ContentProviderOperation.Builder productUpdateOp = ContentProviderOperation.newUpdate(updateProductUri);
         if (categoryPos != -1) {
@@ -317,6 +340,11 @@ public class WarrantyUpdateService extends IntentService {
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         Uri productQuery = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(product.getId())).build();
         ops.add(ContentProviderOperation.newDelete(productQuery).build());
+
+        Uri pictureQuery = PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).
+                appendPath(Long.toString(warranty.getId())).build();
+        ops.add(ContentProviderOperation.newDelete(pictureQuery).build());
+
         Uri warrantyQuery = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
         ops.add(ContentProviderOperation.newDelete(warrantyQuery).build());
 
@@ -436,13 +464,18 @@ public class WarrantyUpdateService extends IntentService {
         return values;
     }
 
-    private static ContentValues newContentValues(AbstractBaseModel model, long now) {
+    private static ContentValues newContentValuesNoName(AbstractBaseIdModel model, long now) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_CREATED_AT, now);
         values.put(COLUMN_UPDATED_AT, now);
         if (model.getId() > 0) {
             values.put(COLUMN_ID, model.getId());
         }
+        return values;
+    }
+
+    private static ContentValues newContentValues(AbstractBaseModel model, long now) {
+        ContentValues values = newContentValuesNoName(model, now);
         values.put(COLUMN_NAME, model.getName());
         return values;
     }

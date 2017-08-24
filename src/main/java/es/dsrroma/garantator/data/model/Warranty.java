@@ -3,6 +3,7 @@ package es.dsrroma.garantator.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -116,6 +117,36 @@ public class Warranty extends AbstractBaseModel {
 
     public void setPictures(List<Picture> pictures) {
         this.pictures = pictures;
+    }
+
+    public void addPicture(Picture picture) {
+        if (pictures == null) {
+            pictures = new ArrayList<Picture>();
+        }
+        pictures.add(picture);
+    }
+
+    public int getPicturesSize() {
+        int res = 0;
+        if (pictures != null) {
+            res = pictures.size();
+        }
+        return res;
+    }
+
+    public boolean removePicture(Picture picture) {
+        pictures.remove(picture);
+        File file = new File(picture.getFileName());
+        return file.delete();
+    }
+
+    public boolean removePictures() {
+        boolean res = true;
+        for (Picture picture : pictures) {
+            File file = new File(picture.getFileName());
+            res &= file.delete();
+        }
+        return res;
     }
 
     public static final Parcelable.Creator<Warranty> CREATOR = new Parcelable.Creator<Warranty>() {

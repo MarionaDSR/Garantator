@@ -7,5 +7,9 @@
     <!-- AddWarrantyActivity -->
     <string name="error_empty_input">%s must be filled</string>
 
+    <!-- Photo Manager -->
+    <string name="error_insert_sd_card">Need SD Card, insert SD card to continue</string>
+    <string name="error_camera_missing">No camera option available</string>
+
     <!-- Others -->
 </resources>

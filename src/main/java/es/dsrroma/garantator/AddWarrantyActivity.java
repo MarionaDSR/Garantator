@@ -1,10 +1,13 @@
 package es.dsrroma.garantator;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -20,27 +23,36 @@ import android.widget.AutoCompleteTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import es.dsrroma.garantator.adapters.PictureAdapter;
 import es.dsrroma.garantator.data.contracts.WarrantyViewContract;
 import es.dsrroma.garantator.data.model.Brand;
 import es.dsrroma.garantator.data.model.Category;
+import es.dsrroma.garantator.data.model.Picture;
 import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
+import es.dsrroma.garantator.photo.PhotoManager;
+import es.dsrroma.garantator.photo.PhotoSourceDialog;
 import es.dsrroma.garantator.view.DatePickerFragment;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_ID;
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
+import static es.dsrroma.garantator.photo.PhotoSourceDialog.REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION;
 import static es.dsrroma.garantator.utils.MyDateUtils.calculateExpirationDate;
 import static es.dsrroma.garantator.utils.MyDateUtils.getNoonTime;
 import static es.dsrroma.garantator.utils.MyStringUtils.isNotEmpty;
@@ -48,7 +60,8 @@ import static es.dsrroma.garantator.utils.MyStringUtils.notEmpty;
 
 public class AddWarrantyActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>,
-        DatePickerDialog.OnDateSetListener {
+        DatePickerDialog.OnDateSetListener,
+        PhotoSourceDialog.PhotoSourceDialogListener {
 
     private SimpleCursorAdapter brandAdapter;
     private SimpleCursorAdapter categoryAdapter;
@@ -93,6 +106,14 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     @BindView(R.id.tvEndDate)
     TextView tvEndDate;
 
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.gvPictures)
+    GridView gvPictures;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.ivPicturesIcon)
+    ImageView ivPicturesIcon;
+
     private boolean editMode;
 
     private Warranty oldWarranty;
@@ -107,6 +128,10 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     private long startDate = Long.MAX_VALUE;
 
     private Cursor cursor;
+
+    // Photos
+    private PhotoManager photoManager;
+    private PictureAdapter pictureAdapter;
 
     private static final int BRAND_LOADER_ID = 2;
     private static final int CATEGORY_LOADER_ID = 3;
@@ -145,10 +170,15 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         }
         fillWarranty();
 
+        pictureAdapter = new PictureAdapter(this, warranty);
+        gvPictures.setAdapter(pictureAdapter);
+
         setListeners();
 
         getSupportLoaderManager().initLoader(BRAND_LOADER_ID, null, this);
         getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
+
+        photoManager = new PhotoManager(AddWarrantyActivity.this);
     }
 
     private void newWarranty() {
@@ -161,8 +191,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         product.setBrand(brand);
         // set default values
         warranty.setStartDate(getNoonTime(new Date()));
-        warranty.setLength(2); // TODO extract
-        warranty.setPeriod("Y"); // TODO extact
+        warranty.setLength(2); // TODO extract to resources
+        warranty.setPeriod("Y"); // TODO extract to resources
     }
 
     private void fillWarranty() {
@@ -233,6 +263,28 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         tvStartDate.setOnClickListener(startDateOnClickListener());
         etWarrantyLength.addTextChangedListener(lengthTextChangedListener());
         spWarrantyPeriod.setOnItemSelectedListener(periodOnItemSelectedListener());
+
+        ivPicturesIcon.setOnClickListener(pictureIconOnClickListener());
+    }
+
+    @NonNull
+    private View.OnClickListener pictureIconOnClickListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // When user click on Avatar Image create new dialog
+                // to show two options:
+                // - Choose image from Gallery or
+                // - Take a picture.
+                if (ActivityCompat.checkSelfPermission(AddWarrantyActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(AddWarrantyActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                } else {
+                    PhotoSourceDialog dialog = new PhotoSourceDialog();
+                    dialog.show(getSupportFragmentManager(), PhotoSourceDialog.PHOTO_SOURCE_DIALOG);
+                }
+            }
+        };
     }
 
     @NonNull
@@ -491,6 +543,41 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    public void onGalleryClick() {
+        photoManager.getPhotoFromGallery();
+    }
+
+    @Override
+    public void onCameraClick() {
+        photoManager.getPhotoFromCamera();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case PhotoManager.LOAD_IMAGE_REQUEST_CODE:
+            case PhotoManager.CAPTURE_IMAGE_REQUEST_CODE:
+                String photoPath = photoManager.onActivityResult(requestCode, resultCode, data);
+                if (photoPath != null) {
+                    addPicture(photoPath);
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, requestCode, data);
+        }
+    }
+
+    public void addPicture(String picturePath) {
+        Picture picture = new Picture();
+        picture.setWarranty(warranty);
+        picture.setFileName(picturePath);
+        picture.setPosition(warranty.getPicturesSize());
+        List<Picture> pictures = warranty.getPictures();
+        pictures.add(picture);
+        pictureAdapter.notifyDataSetChanged();
+    }
+
     private void addWarranty() {
         WarrantyUpdateService.insertNewWarrantyBatch(this, warranty);
         finish();
@@ -519,5 +606,31 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             }
         }
         return -1; // Not possible
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Toast.makeText(this, "¡Gracias ???? ! " + requestCode + "(" + (requestCode & 0x0000ffff) + ")", Toast.LENGTH_SHORT).show();
+        switch (requestCode & 0x0000ffff) { // to manage requestCode from fragments
+            case REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    onGalleryClick();
+                } else {
+                    Toast.makeText(this, "Si no me das permisos, no puedo hacerlo!!", Toast.LENGTH_LONG).show();
+                }
+            }
+            break;
+            case PhotoSourceDialog.REQUEST_CAMERA_PERMISSION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    onCameraClick();
+                } else {
+                    Toast.makeText(this, "Si no me das permisos, no puedo hacerlo!!", Toast.LENGTH_LONG).show();
+                }
+            }
+            break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
     }
 }

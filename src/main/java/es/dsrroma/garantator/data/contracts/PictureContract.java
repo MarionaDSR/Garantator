@@ -41,7 +41,7 @@ public class PictureContract extends BaseContract {
     }
 
     // Content Provider Constants
-    public static final String PICTURE_PATH = "brand";
+    public static final String PICTURE_PATH = "picture";
     public static final int PICTURE_CODE = BASE_CODE * PICTURE_BASE_CODE;
     public static final int PICTURE_CODE_BY_ID = PICTURE_CODE + QUERY_BY_ID;
     public static final int PICTURE_CODE_BY_WARRANTY = PICTURE_CODE + QUERY_BY_WARRANTY;

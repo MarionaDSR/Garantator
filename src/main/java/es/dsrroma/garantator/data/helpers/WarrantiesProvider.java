@@ -25,6 +25,7 @@ import static es.dsrroma.garantator.data.contracts.BaseContract.BASE_CONTENT_URI
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_ALL;
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_BY_ID;
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_BY_NAME;
+import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_BY_WARRANTY;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CODE_BY_NAME;
@@ -36,7 +37,9 @@ import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_COD
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_PATH;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CODE;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CODE_BY_ID;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CODE_BY_WARRANTY;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_PATH;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry.COLUMN_WARRANTY_ID;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CODE_BY_ID;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_PATH;
@@ -52,6 +55,7 @@ public class WarrantiesProvider extends ContentProvider {
 
     public static final String NUM_PARAM = "/#";
     public static final String STRING_PARAM = "/*";
+    public static final String WARRANTY_FILTER = "warranty";
 
     private static final UriMatcher uriMatcher = buildUriMatcher();
 
@@ -80,6 +84,7 @@ public class WarrantiesProvider extends ContentProvider {
 
         matcher.addURI(authority, PICTURE_PATH, PICTURE_CODE);
         matcher.addURI(authority, PICTURE_PATH + NUM_PARAM, PICTURE_CODE_BY_ID);
+        matcher.addURI(authority, PICTURE_PATH + "/" + WARRANTY_FILTER + NUM_PARAM, PICTURE_CODE_BY_WARRANTY);
 
         return matcher;
     }
@@ -109,6 +114,9 @@ public class WarrantiesProvider extends ContentProvider {
             case QUERY_BY_NAME:
                 cursor = queryByName(tableName, uri, projection, sortOrder);
                 break;
+            case QUERY_BY_WARRANTY:
+                cursor = queryByWarranty(tableName, uri, projection, sortOrder);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -122,13 +130,22 @@ public class WarrantiesProvider extends ContentProvider {
         int queryType = getQueryType(uriCode);
         int deleted;
         switch (queryType) {
-            case QUERY_BY_ID:
+            case QUERY_BY_ID: {
                 SQLiteDatabase db = openHelper.getWritableDatabase();
                 String id = uri.getPathSegments().get(1);
                 String tableName = getTableName(uriCode);
 
                 deleted = db.delete(tableName, BaseEntry.COLUMN_ID + SQL_PARAM, new String[]{id});
                 break;
+            }
+            case QUERY_BY_WARRANTY: {
+                SQLiteDatabase db = openHelper.getWritableDatabase();
+                String id = uri.getPathSegments().get(1);
+                String tableName = getTableName(uriCode);
+
+                deleted = db.delete(tableName, COLUMN_WARRANTY_ID + SQL_PARAM, new String[]{id});
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unable to delete uri: " + uri);
         }
@@ -285,6 +302,17 @@ public class WarrantiesProvider extends ContentProvider {
         String[] newSelectionArgs = new String[] {id};
         cursor = openHelper.getReadableDatabase().query(tableName, projection,
                 BaseEntry.COLUMN_NAME + BaseContract.SQL_PARAM,
+                newSelectionArgs, null, null, sortOrder);
+        return cursor;
+    }
+
+    private Cursor queryByWarranty(@NonNull String tableName, @NonNull Uri uri, @Nullable String[] projection,
+                               @Nullable String sortOrder) {
+        Cursor cursor;
+        String id = uri.getLastPathSegment();
+        String[] newSelectionArgs = new String[] {id};
+        cursor = openHelper.getReadableDatabase().query(tableName, projection,
+                COLUMN_WARRANTY_ID + BaseContract.SQL_PARAM,
                 newSelectionArgs, null, null, sortOrder);
         return cursor;
     }

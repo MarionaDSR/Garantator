@@ -1,0 +1,4 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/warranty_picture_image"
+    android:layout_width="@dimen/picture_size"
+    android:layout_height="@dimen/picture_size" />
