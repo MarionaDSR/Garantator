@@ -571,7 +571,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     public void addPicture(String picturePath) {
         Picture picture = new Picture();
         picture.setWarranty(warranty);
-        picture.setFileName(picturePath);
+        picture.setFilename(picturePath);
         picture.setPosition(warranty.getPicturesSize());
         List<Picture> pictures = warranty.getPictures();
         pictures.add(picture);

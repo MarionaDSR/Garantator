@@ -136,14 +136,14 @@ public class Warranty extends AbstractBaseModel {
 
     public boolean removePicture(Picture picture) {
         pictures.remove(picture);
-        File file = new File(picture.getFileName());
+        File file = new File(picture.getFilename());
         return file.delete();
     }
 
     public boolean removePictures() {
         boolean res = true;
         for (Picture picture : pictures) {
-            File file = new File(picture.getFileName());
+            File file = new File(picture.getFilename());
             res &= file.delete();
         }
         return res;

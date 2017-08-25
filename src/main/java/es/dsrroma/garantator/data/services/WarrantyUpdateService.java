@@ -234,7 +234,7 @@ public class WarrantyUpdateService extends IntentService {
         List<Picture> pictures = warranty.getPictures();
         for (Picture picture: pictures) {
             ContentValues pictureCV = newContentValuesNoName(picture, now);
-            pictureCV.put(PictureEntry.COLUMN_FILE_NAME, picture.getFileName());
+            pictureCV.put(PictureEntry.COLUMN_FILE_NAME, picture.getFilename());
             pictureCV.put(PictureEntry.COLUMN_POSITION, picture.getPosition());
             ops.add(ContentProviderOperation.newInsert(PICTURE_CONTENT_URI)
                     .withValueBackReference(PictureContract.PictureEntry.COLUMN_WARRANTY_ID, warrantyPos)

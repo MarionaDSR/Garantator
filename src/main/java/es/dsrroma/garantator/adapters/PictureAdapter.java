@@ -52,20 +52,20 @@ public class PictureAdapter extends ArrayAdapter {
         final Picture picture = (Picture) getItem(position);
         // Set values
         int imageSize = (int) getContext().getResources().getDimension(R.dimen.picture_size);
-        Bitmap image = ImageUtils.getScaledBitmapImage(picture.getFileName(), imageSize, imageSize);
+        Bitmap image = ImageUtils.getScaledBitmapImage(picture.getFilename(), imageSize, imageSize);
         if (image != null) {
             holder.iv.setImageBitmap(image);
         } else {
             // TODO holder.iv.setImageResource(R.drawable.ic_notes_picture_not_found);
-            Crashlytics.log("Image not found " + picture.getFileName());
-            Toast.makeText(getContext(), "Image not found " + picture.getFileName(), Toast.LENGTH_LONG).show();
+            Crashlytics.log("Image not found " + picture.getFilename());
+            Toast.makeText(getContext(), "Image not found " + picture.getFilename(), Toast.LENGTH_LONG).show();
         }
 
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ImageView dialogImage = new ImageView(context);
-                Bitmap image = ImageUtils.getScaledBitmapImage(picture.getFileName(), 0, 0);
+                Bitmap image = ImageUtils.getScaledBitmapImage(picture.getFilename(), 0, 0);
                 dialogImage.setImageBitmap(image);
                 new AlertDialog.Builder(context)
                         .setView(dialogImage)

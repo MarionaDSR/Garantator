@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 public class Picture extends AbstractBaseIdModel {
 
-    private String fileName;
+    private String filename;
     private Warranty warranty;
     private long warrantyId;
     private int position;
@@ -16,24 +16,24 @@ public class Picture extends AbstractBaseIdModel {
 
     private Picture(Parcel in) {
         super(in);
-        fileName = in.readString();
+        filename = in.readString();
         position = in.readInt();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
-        dest.writeString(fileName);
+        dest.writeString(filename);
         dest.writeInt(position);
     }
 
 
-    public String getFileName() {
-        return fileName;
+    public String getFilename() {
+        return filename;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     public Warranty getWarranty() {
@@ -72,19 +72,19 @@ public class Picture extends AbstractBaseIdModel {
 
     @Override
     public String toString() {
-        return super.toString() + SEP + getFileName();
+        return super.toString() + SEP + getFilename();
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof Picture) {
-            return fileName.equals(((Picture) o).getFileName());
+            return filename.equals(((Picture) o).getFilename());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return fileName.hashCode();
+        return filename.hashCode();
     }
 }
