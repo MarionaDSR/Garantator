@@ -14,8 +14,11 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+
 import es.dsrroma.garantator.adapters.WarrantyAdapter;
 import es.dsrroma.garantator.data.model.Warranty;
+import io.fabric.sdk.android.Fabric;
 
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
         rvWarrantiesList = (RecyclerView) findViewById(R.id.rvWarrantiesList);
