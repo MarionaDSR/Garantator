@@ -2,6 +2,8 @@ package es.dsrroma.garantator.utils;
 
 import android.os.Environment;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,11 +47,9 @@ public class FileUtils {
             out = null;
 
         } catch (FileNotFoundException fnfe1) {
-            // TODO Crashlytics.logException(fnfe1);
-            throw new RuntimeException(fnfe1);
+            Crashlytics.logException(fnfe1);
         } catch (Exception e) {
-            // TODO Crashlytics.logException(e);
-            throw new RuntimeException(e);
+            Crashlytics.logException(e);
         }
     }
 

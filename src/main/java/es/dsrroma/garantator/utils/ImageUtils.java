@@ -3,6 +3,8 @@ package es.dsrroma.garantator.utils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,8 +28,7 @@ public class ImageUtils {
                 bif.read(byteImage1);
                 BitmapFactory.decodeByteArray(byteImage1, 0, byteImage1.length);
             } catch (Exception e) {
-                // TODO use Crashlytics.logException(e);
-                throw new RuntimeException(e);
+                Crashlytics.logException(e);
             }
             // Get the dimensions of the bitmap
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();

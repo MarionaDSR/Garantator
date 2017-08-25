@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -113,9 +115,7 @@ public class PhotoManager {
 
                 return file.getAbsolutePath();
             } catch (Exception e) {
-                // TODO Crashlytics.logException(e);
-                e.printStackTrace();
-                throw new RuntimeException(e);
+                Crashlytics.logException(e);
             }
         } else if (requestCode == CAPTURE_IMAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             // Save Image To Gallery

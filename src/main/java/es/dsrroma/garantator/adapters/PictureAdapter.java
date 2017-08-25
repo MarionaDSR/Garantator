@@ -11,6 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
 import es.dsrroma.garantator.R;
 import es.dsrroma.garantator.data.model.Picture;
 import es.dsrroma.garantator.data.model.Warranty;
@@ -55,7 +57,7 @@ public class PictureAdapter extends ArrayAdapter {
             holder.iv.setImageBitmap(image);
         } else {
             // TODO holder.iv.setImageResource(R.drawable.ic_notes_picture_not_found);
-            // TODO use Crashlytics.log("Image not found " + picture.getFileName());
+            Crashlytics.log("Image not found " + picture.getFileName());
             Toast.makeText(getContext(), "Image not found " + picture.getFileName(), Toast.LENGTH_LONG).show();
         }
 
