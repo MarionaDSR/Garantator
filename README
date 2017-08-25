@@ -1,1 +1,3 @@
 Personal project for manage product warranties.
+
+Needs a file named fabric.properties on module root containing secretKey and apiKey. You can get them on https://fabric.io/settings/organizations  after selecting your Organization, selecting the "Build Secret" button under your organization's name.
