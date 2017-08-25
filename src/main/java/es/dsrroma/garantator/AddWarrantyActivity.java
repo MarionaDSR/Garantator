@@ -30,12 +30,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import es.dsrroma.garantator.adapters.PictureAdapter;
+import es.dsrroma.garantator.data.contracts.PictureContract;
 import es.dsrroma.garantator.data.contracts.WarrantyViewContract;
 import es.dsrroma.garantator.data.model.Brand;
 import es.dsrroma.garantator.data.model.Category;
@@ -52,6 +55,8 @@ import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_NAME;
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CONTENT_URI;
+import static es.dsrroma.garantator.data.helpers.WarrantiesProvider.WARRANTY_FILTER;
 import static es.dsrroma.garantator.photo.PhotoSourceDialog.REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION;
 import static es.dsrroma.garantator.utils.MyDateUtils.calculateExpirationDate;
 import static es.dsrroma.garantator.utils.MyDateUtils.getNoonTime;
@@ -156,14 +161,14 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         if (editMode) {
             setTitle(R.string.edit_warranty_title);
             cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
-            if (cursor.moveToFirst()) {
-                warranty = WarrantyViewContract.getBeanFromCursor(cursor);
-                try {
-                    oldWarranty = (Warranty)warranty.clone();
-                } catch (CloneNotSupportedException e) {
-                    throw new IllegalStateException(e); // warraties are clonable
-                }
+            warranty = WarrantyViewContract.getBeanFromCursor(cursor);
+            try {
+                oldWarranty = (Warranty)warranty.clone();
+            } catch (CloneNotSupportedException e) {
+                Crashlytics.logException(e);
+                throw new IllegalStateException(e); // warraties are clonable
             }
+            loadPictures();
         } else { // add mode
             setTitle(R.string.add_warranty_title);
             newWarranty();
@@ -172,13 +177,20 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
         pictureAdapter = new PictureAdapter(this, warranty);
         gvPictures.setAdapter(pictureAdapter);
-
         setListeners();
 
         getSupportLoaderManager().initLoader(BRAND_LOADER_ID, null, this);
         getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
 
         photoManager = new PhotoManager(AddWarrantyActivity.this);
+    }
+
+    private void loadPictures() {
+        Uri picturesUri = PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).appendPath(Long.toString(warranty.getId())).build();
+        cursor = getContentResolver().query(picturesUri, null, null, null, null, null);
+        List<Picture> pictures = PictureContract.getBeansFromCursor(cursor);
+        Toast.makeText(this, "We have " + pictures.size() + " pictures!", Toast.LENGTH_LONG).show();
+        warranty.setPictures(pictures);
     }
 
     private void newWarranty() {

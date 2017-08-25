@@ -5,7 +5,7 @@
     <dimen name="progressBarSize">42dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <!-- Pictures -->
-    <dimen name="picture_size">50dp</dimen>
+    <dimen name="picture_size">95dp</dimen>
     <dimen name="picture_spacing">5dp</dimen>
-    <dimen name="picture_column_width">55dp</dimen>
+    <dimen name="picture_column_width">100dp</dimen>
 </resources>
