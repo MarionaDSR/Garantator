@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -56,9 +55,8 @@ public class PictureAdapter extends ArrayAdapter {
         if (image != null) {
             holder.iv.setImageBitmap(image);
         } else {
-            // TODO holder.iv.setImageResource(R.drawable.ic_notes_picture_not_found);
+            holder.iv.setImageResource(R.drawable.ic_picture_not_found);
             Crashlytics.log("Image not found " + picture.getFilename());
-            Toast.makeText(getContext(), "Image not found " + picture.getFilename(), Toast.LENGTH_LONG).show();
         }
 
         convertView.setOnClickListener(new View.OnClickListener() {
