@@ -75,4 +75,20 @@
             style="@style/formValue2" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <GridView
+            android:id="@+id/gvPictures"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnWidth="@dimen/picture_column_width"
+            android:gravity="center"
+            android:horizontalSpacing="@dimen/picture_spacing"
+            android:numColumns="auto_fit"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="@dimen/picture_spacing" />
+    </LinearLayout>
 </LinearLayout>

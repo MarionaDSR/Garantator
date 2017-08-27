@@ -11,18 +11,26 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.GridView;
 import android.widget.TextView;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import es.dsrroma.garantator.adapters.PictureAdapter;
+import es.dsrroma.garantator.data.contracts.PictureContract;
 import es.dsrroma.garantator.data.model.Brand;
 import es.dsrroma.garantator.data.model.Category;
+import es.dsrroma.garantator.data.model.Picture;
 import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.data.services.WarrantyUpdateService;
 
+import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.getBeanFromCursor;
+import static es.dsrroma.garantator.data.helpers.WarrantiesProvider.WARRANTY_FILTER;
 
 public class DetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
@@ -63,8 +71,14 @@ public class DetailActivity extends AppCompatActivity implements
     @BindView(R.id.tvEndDate)
     TextView tvEndDate;
 
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.gvPictures)
+    GridView gvPictures;
+
     private Warranty warranty;
     private Cursor cursor;
+
+    private PictureAdapter pictureAdapter;
 
     boolean toRefresh = true;
 
@@ -79,6 +93,9 @@ public class DetailActivity extends AppCompatActivity implements
 
         refreshDetail();
         getSupportLoaderManager().initLoader(WARRANTY_LOADER_ID, null, this);
+
+        pictureAdapter = new PictureAdapter(this, warranty, false);
+        gvPictures.setAdapter(pictureAdapter);
     }
 
     @Override
@@ -186,6 +203,14 @@ public class DetailActivity extends AppCompatActivity implements
             tvModel.setText(product.getModel());
             tvSerialNumber.setText(product.getSerialNumber());
         }
+        loadPictures();
+    }
+
+    private void loadPictures() {
+        Uri picturesUri = PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).appendPath(Long.toString(warranty.getId())).build();
+        cursor = getContentResolver().query(picturesUri, null, null, null, null, null);
+        List<Picture> pictures = PictureContract.getBeansFromCursor(cursor);
+        warranty.setPictures(pictures);
     }
 
     private String getPeriodLabel(String period) {
