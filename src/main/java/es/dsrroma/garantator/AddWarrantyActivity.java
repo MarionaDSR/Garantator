@@ -189,7 +189,6 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         Uri picturesUri = PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).appendPath(Long.toString(warranty.getId())).build();
         cursor = getContentResolver().query(picturesUri, null, null, null, null, null);
         List<Picture> pictures = PictureContract.getBeansFromCursor(cursor);
-        Toast.makeText(this, "We have " + pictures.size() + " pictures!", Toast.LENGTH_LONG).show();
         warranty.setPictures(pictures);
     }
 
@@ -203,8 +202,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         product.setBrand(brand);
         // set default values
         warranty.setStartDate(getNoonTime(new Date()));
-        warranty.setLength(2); // TODO extract to resources
-        warranty.setPeriod("Y"); // TODO extract to resources
+        warranty.setLength(getResources().getInteger(R.integer.warranty_time_default));
+        warranty.setPeriod(getString(R.string.warranty_period_default));
     }
 
     private void fillWarranty() {

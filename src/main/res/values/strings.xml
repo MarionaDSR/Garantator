@@ -42,6 +42,8 @@
         <item>M</item>
         <item>Y</item>
     </string-array>
+    <string name="warranty_period_default" translatable="false">Y</string>
+    <integer name="warranty_time_default">2</integer>
     <!-- pictures -->
     <string name="photo_source_dialog_title">Add a picture form</string>
     <string name="photo_gallery_button">Gallery</string>
