@@ -11,10 +11,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import es.dsrroma.garantator.data.contracts.PictureContract;
 import es.dsrroma.garantator.data.contracts.ProductContract;
 import es.dsrroma.garantator.data.contracts.WarrantyContract;
 import es.dsrroma.garantator.data.model.AbstractBaseIdModel;
@@ -24,6 +25,7 @@ import es.dsrroma.garantator.data.model.Category;
 import es.dsrroma.garantator.data.model.Picture;
 import es.dsrroma.garantator.data.model.Product;
 import es.dsrroma.garantator.data.model.Warranty;
+import es.dsrroma.garantator.utils.FileUtils;
 import es.dsrroma.garantator.utils.NotifyUserRunnable;
 
 import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN_CREATED_AT;
@@ -35,6 +37,9 @@ import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_U
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry.COLUMN_FILE_NAME;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry.COLUMN_POSITION;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry.COLUMN_WARRANTY_ID;
 import static es.dsrroma.garantator.data.contracts.ProductContract.PRODUCT_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.ProductContract.ProductEntry;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
@@ -168,81 +173,81 @@ public class WarrantyUpdateService extends IntentService {
     }
 
     private void performInsertBatch(Warranty warranty) {
-        long now = System.currentTimeMillis();
-        Product product = warranty.getProduct();
-        Category category = product.getCategory();
-        long categoryId = category.getId();
-        int categoryPos = -1;
-        Brand brand = product.getBrand();
-        long brandId = brand.getId();
-        int brandPos = -1;
-
-        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-        if (categoryId == 0) { // only insert the category if new
-            ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
-                    .withValues(newContentValues(category, now))
-                    .build());
-            categoryPos = 0;
-        }
-        if (brandId == 0) { // only insert the brand if new
-            ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
-                    .withValues(newContentValues(brand, now))
-                    .build());
-            brandPos = categoryPos + 1;
-        }
-        int productPos = brandPos + 1;
-        int warrantyPos = productPos + 1;
-
-
-        ContentValues productCV = newContentValues(product, now);
-        productCV.put(ProductContract.ProductEntry.COLUMN_MODEL, product.getModel());
-        productCV.put(ProductContract.ProductEntry.COLUMN_SERIAL_NUMBER, product.getSerialNumber());
-        if (categoryId != 0) { // set old category id to product
-            productCV.put(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, categoryId);
-        }
-        if (brandId != 0) { // set old brand id to product
-            productCV.put(ProductContract.ProductEntry.COLUMN_BRAND_ID, brandId);
-        }
-
-        ContentProviderOperation.Builder productOp = ContentProviderOperation.newInsert(PRODUCT_CONTENT_URI);
-        if (categoryId == 0) { // set new category id to product
-            productOp.withValueBackReference(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, categoryPos);
-        }
-        if (brandId == 0) { // set new brand id to product
-            productOp.withValueBackReference(ProductContract.ProductEntry.COLUMN_BRAND_ID, brandPos);
-        }
-        ops.add(productOp
-                .withValues(productCV)
-                .build());
-
-        ContentValues warrantyCV = newContentValues(warranty, now);
-        if (warranty.getStartDate() != null) {
-            warrantyCV.put(WarrantyEntry.COLUMN_START_DATE, warranty.getStartDate().getTime());
-        }
-        if (warranty.getEndDate() != null) {
-            warrantyCV.put(WarrantyEntry.COLUMN_END_DATE, warranty.getEndDate().getTime());
-        }
-        warrantyCV.put(WarrantyEntry.COLUMN_LENGTH, warranty.getLength());
-        warrantyCV.put(WarrantyEntry.COLUMN_PERIOD, warranty.getPeriod());
-
-
-        ops.add(ContentProviderOperation.newInsert(WARRANTY_CONTENT_URI)
-                .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, productPos)
-                .withValues(warrantyCV)
-                .build());
-
-        List<Picture> pictures = warranty.getPictures();
-        for (Picture picture: pictures) {
-            ContentValues pictureCV = newContentValuesNoName(picture, now);
-            pictureCV.put(PictureEntry.COLUMN_FILE_NAME, picture.getFilename());
-            pictureCV.put(PictureEntry.COLUMN_POSITION, picture.getPosition());
-            ops.add(ContentProviderOperation.newInsert(PICTURE_CONTENT_URI)
-                    .withValueBackReference(PictureContract.PictureEntry.COLUMN_WARRANTY_ID, warrantyPos)
-                    .withValues(pictureCV)
-                    .build());
-        }
-
         try {
+            long now = System.currentTimeMillis();
+            Product product = warranty.getProduct();
+            Category category = product.getCategory();
+            long categoryId = category.getId();
+            int categoryPos = -1;
+            Brand brand = product.getBrand();
+            long brandId = brand.getId();
+            int brandPos = -1;
+
+            ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+            if (categoryId == 0) { // only insert the category if new
+                ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
+                        .withValues(newContentValues(category, now))
+                        .build());
+                categoryPos = 0;
+            }
+            if (brandId == 0) { // only insert the brand if new
+                ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
+                        .withValues(newContentValues(brand, now))
+                        .build());
+                brandPos = categoryPos + 1;
+            }
+            int productPos = brandPos + 1;
+            int warrantyPos = productPos + 1;
+
+
+            ContentValues productCV = newContentValues(product, now);
+            productCV.put(ProductContract.ProductEntry.COLUMN_MODEL, product.getModel());
+            productCV.put(ProductContract.ProductEntry.COLUMN_SERIAL_NUMBER, product.getSerialNumber());
+            if (categoryId != 0) { // set old category id to product
+                productCV.put(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, categoryId);
+            }
+            if (brandId != 0) { // set old brand id to product
+                productCV.put(ProductContract.ProductEntry.COLUMN_BRAND_ID, brandId);
+            }
+
+            ContentProviderOperation.Builder productOp = ContentProviderOperation.newInsert(PRODUCT_CONTENT_URI);
+            if (categoryId == 0) { // set new category id to product
+                productOp.withValueBackReference(ProductContract.ProductEntry.COLUMN_CATEGORY_ID, categoryPos);
+            }
+            if (brandId == 0) { // set new brand id to product
+                productOp.withValueBackReference(ProductContract.ProductEntry.COLUMN_BRAND_ID, brandPos);
+            }
+            ops.add(productOp
+                    .withValues(productCV)
+                    .build());
+
+            ContentValues warrantyCV = newContentValues(warranty, now);
+            if (warranty.getStartDate() != null) {
+                warrantyCV.put(WarrantyEntry.COLUMN_START_DATE, warranty.getStartDate().getTime());
+            }
+            if (warranty.getEndDate() != null) {
+                warrantyCV.put(WarrantyEntry.COLUMN_END_DATE, warranty.getEndDate().getTime());
+            }
+            warrantyCV.put(WarrantyEntry.COLUMN_LENGTH, warranty.getLength());
+            warrantyCV.put(WarrantyEntry.COLUMN_PERIOD, warranty.getPeriod());
+
+
+            ops.add(ContentProviderOperation.newInsert(WARRANTY_CONTENT_URI)
+                    .withValueBackReference(WarrantyContract.WarrantyEntry.COLUMN_PRODUCT_ID, productPos)
+                    .withValues(warrantyCV)
+                    .build());
+
+            List<Picture> pictures = warranty.getPictures();
+            for (Picture picture: pictures) {
+                ContentValues pictureCV = newContentValuesNoName(picture, now);
+                pictureCV.put(PictureEntry.COLUMN_FILE_NAME, picture.getFilename());
+                pictureCV.put(PictureEntry.COLUMN_POSITION, picture.getPosition());
+                ops.add(ContentProviderOperation.newInsert(PICTURE_CONTENT_URI)
+                        .withValueBackReference(COLUMN_WARRANTY_ID, warrantyPos)
+                        .withValues(pictureCV)
+                        .build());
+            }
+
             getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
         } catch (final Throwable t) {
             notifyProblem(t);
@@ -250,75 +255,110 @@ public class WarrantyUpdateService extends IntentService {
     }
 
     private void performUpdateBatch(Warranty newWarranty, Warranty oldWarranty) {
-        long now = System.currentTimeMillis();
-
-        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-        ContentValues warrantyCV = updateContentValues(newWarranty, oldWarranty, now);
-
-        // update product // product may not be null, neither may change id
-        Product newProduct = newWarranty.getProduct();
-        Product oldProduct = oldWarranty.getProduct();
-        ContentValues productCV = updateContentValues(newProduct, oldProduct, now);
-
-        int categoryPos = -1;
-        int brandPos = -1;
-
-        // update product category
-        Category newCategory = newProduct.getCategory();
-        Category oldCategory = oldProduct.getCategory();
-        if (newCategory == null) {
-            productCV.putNull(ProductEntry.COLUMN_CATEGORY_ID);
-        } else {
-            if (newCategory.getId() <= 0) {
-                ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
-                        .withValues(newContentValues(newCategory, now))
-                        .build());
-                categoryPos = 0;
-            } else if (oldCategory == null || newCategory.getId() != oldProduct.getCategory().getId()) {
-                productCV.put(ProductEntry.COLUMN_CATEGORY_ID, newCategory.getId());
-            }
-        }
-
-        // update product brand
-        Brand newBrand = newProduct.getBrand();
-        Brand oldBrand = oldProduct.getBrand();
-        if (newBrand == null) {
-            productCV.putNull(ProductEntry.COLUMN_BRAND_ID);
-        } else {
-            if (newBrand.getId() <= 0) {
-                ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
-                        .withValues(newContentValues(newBrand, now))
-                        .build());
-                brandPos = categoryPos + 1;
-            } else if (oldBrand == null || newBrand.getId() != oldProduct.getBrand().getId()) {
-                productCV.put(ProductEntry.COLUMN_BRAND_ID, newBrand.getId());
-            }
-        }
-
-        // update pictures TODO
-
-        Uri updateProductUri = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(newProduct.getId())).build();
-        ContentProviderOperation.Builder productUpdateOp = ContentProviderOperation.newUpdate(updateProductUri);
-        if (categoryPos != -1) {
-            productUpdateOp.withValueBackReference(ProductEntry.COLUMN_CATEGORY_ID, categoryPos);
-        }
-        if (brandPos != -1) {
-            productUpdateOp.withValueBackReference(ProductEntry.COLUMN_BRAND_ID, brandPos);
-        }
-        if (productCV.size() != 0) {
-            productUpdateOp.withValues(productCV);
-            ops.add(productUpdateOp.build());
-        }
-
-        if (warrantyCV.size() != 0) {
-            Uri updateWarrantyUri = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(newWarranty.getId())).build();
-            ContentProviderOperation.Builder warrantyUpdateOp = ContentProviderOperation.newUpdate(updateWarrantyUri).
-                    withValues(warrantyCV);
-            ops.add(warrantyUpdateOp.build());
-        }
-
+        List<Picture> picturesToDelete = new ArrayList<>();
         try {
+            long now = System.currentTimeMillis();
+
+            ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+            ContentValues warrantyCV = updateContentValues(newWarranty, oldWarranty, now);
+
+            // update product // product may not be null, neither may change id
+            Product newProduct = newWarranty.getProduct();
+            Product oldProduct = oldWarranty.getProduct();
+            ContentValues productCV = updateContentValues(newProduct, oldProduct, now);
+
+            int categoryPos = -1;
+            int brandPos = -1;
+
+            // update product category
+            Category newCategory = newProduct.getCategory();
+            Category oldCategory = oldProduct.getCategory();
+            if (newCategory == null) {
+                productCV.putNull(ProductEntry.COLUMN_CATEGORY_ID);
+            } else {
+                if (newCategory.getId() <= 0) {
+                    ops.add(ContentProviderOperation.newInsert(CATEGORY_CONTENT_URI)
+                            .withValues(newContentValues(newCategory, now))
+                            .build());
+                    categoryPos = 0;
+                } else if (oldCategory == null || newCategory.getId() != oldProduct.getCategory().getId()) {
+                    productCV.put(ProductEntry.COLUMN_CATEGORY_ID, newCategory.getId());
+                }
+            }
+
+            // update product brand
+            Brand newBrand = newProduct.getBrand();
+            Brand oldBrand = oldProduct.getBrand();
+            if (newBrand == null) {
+                productCV.putNull(ProductEntry.COLUMN_BRAND_ID);
+            } else {
+                if (newBrand.getId() <= 0) {
+                    ops.add(ContentProviderOperation.newInsert(BRAND_CONTENT_URI)
+                            .withValues(newContentValues(newBrand, now))
+                            .build());
+                    brandPos = categoryPos + 1;
+                } else if (oldBrand == null || newBrand.getId() != oldProduct.getBrand().getId()) {
+                    productCV.put(ProductEntry.COLUMN_BRAND_ID, newBrand.getId());
+                }
+            }
+
+            // update pictures
+            List<Picture> newPictures = newWarranty.getPictures();
+            List<Picture> cleanedPictures = new ArrayList<>();
+            int i = 0;
+            for (Picture newPicture: newPictures) {
+                Uri pictureQuery = PICTURE_CONTENT_URI.buildUpon().
+                        appendPath(Long.toString(newPicture.getId())).build();
+                if (newPicture.isToDelete()) {
+                    ops.add(ContentProviderOperation.newDelete(pictureQuery).build());
+                    picturesToDelete.add(newPicture);
+                } else {
+                    if (newPicture.isToCreate()) {
+                        newPicture.setPosition(i);
+                        ContentValues newPictureCV = newContentValuesNoName(newPicture, now);
+                        newPictureCV.put(COLUMN_FILE_NAME, newPicture.getFilename());
+                        newPictureCV.put(COLUMN_POSITION, newPicture.getPosition());
+                        newPictureCV.put(COLUMN_WARRANTY_ID, newWarranty.getId());
+                        ops.add(ContentProviderOperation.newInsert(PICTURE_CONTENT_URI).withValues(newPictureCV).build());
+                        newPicture.setToCreate(false);
+                    } else {
+                        if (newPicture.getPosition() != i) { // to update
+                            newPicture.setPosition(i);
+                            ops.add(ContentProviderOperation.newUpdate(pictureQuery).
+                                    withValue(COLUMN_POSITION, i).build());
+                        }
+                    }
+                    cleanedPictures.add(newPicture);
+                    i++;
+                }
+            }
+            newWarranty.setPictures(cleanedPictures);
+
+            Uri updateProductUri = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(newProduct.getId())).build();
+            ContentProviderOperation.Builder productUpdateOp = ContentProviderOperation.newUpdate(updateProductUri);
+            if (categoryPos != -1) {
+                productUpdateOp.withValueBackReference(ProductEntry.COLUMN_CATEGORY_ID, categoryPos);
+            }
+            if (brandPos != -1) {
+                productUpdateOp.withValueBackReference(ProductEntry.COLUMN_BRAND_ID, brandPos);
+            }
+            if (productCV.size() != 0) {
+                productUpdateOp.withValues(productCV);
+                ops.add(productUpdateOp.build());
+            }
+
+            if (warrantyCV.size() != 0) {
+                Uri updateWarrantyUri = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(newWarranty.getId())).build();
+                ContentProviderOperation.Builder warrantyUpdateOp = ContentProviderOperation.newUpdate(updateWarrantyUri).
+                        withValues(warrantyCV);
+                ops.add(warrantyUpdateOp.build());
+            }
+
             getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
+
+            for (Picture picture: picturesToDelete) {
+                FileUtils.deleteFile(picture.getFilename());
+            }
         } catch (final Throwable t) {
             notifyProblem(t);
         }
@@ -336,19 +376,19 @@ public class WarrantyUpdateService extends IntentService {
      * @param warranty
      */
     private void performDeleteProductAndWarranty(Warranty warranty) {
-        Product product = warranty.getProduct();
-        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-        Uri productQuery = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(product.getId())).build();
-        ops.add(ContentProviderOperation.newDelete(productQuery).build());
-
-        Uri pictureQuery = PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).
-                appendPath(Long.toString(warranty.getId())).build();
-        ops.add(ContentProviderOperation.newDelete(pictureQuery).build());
-
-        Uri warrantyQuery = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
-        ops.add(ContentProviderOperation.newDelete(warrantyQuery).build());
-
         try {
+            Product product = warranty.getProduct();
+            ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+            Uri productQuery = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(product.getId())).build();
+            ops.add(ContentProviderOperation.newDelete(productQuery).build());
+
+            Uri pictureQuery = PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).
+                    appendPath(Long.toString(warranty.getId())).build();
+            ops.add(ContentProviderOperation.newDelete(pictureQuery).build());
+
+            Uri warrantyQuery = WARRANTY_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
+            ops.add(ContentProviderOperation.newDelete(warrantyQuery).build());
+
             getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
         } catch (final Throwable t) {
             notifyProblem(t);
@@ -361,14 +401,14 @@ public class WarrantyUpdateService extends IntentService {
      */
     private void performDeleteBrandBatch(Brand brand) {
         if (brand != null) {
-            ArrayList<ContentProviderOperation> deleteBrandOps = new ArrayList<>();
-            Uri brandQuery = BRAND_CONTENT_URI.buildUpon().appendPath(Long.toString(brand.getId())).build();
-            deleteBrandOps.add(ContentProviderOperation.newAssertQuery(brandQuery)
-                    .withExpectedCount(1)
-                    .build());
-            deleteBrandOps.add(ContentProviderOperation.newDelete(brandQuery).build());
-
             try {
+                ArrayList<ContentProviderOperation> deleteBrandOps = new ArrayList<>();
+                Uri brandQuery = BRAND_CONTENT_URI.buildUpon().appendPath(Long.toString(brand.getId())).build();
+                deleteBrandOps.add(ContentProviderOperation.newAssertQuery(brandQuery)
+                        .withExpectedCount(1)
+                        .build());
+                deleteBrandOps.add(ContentProviderOperation.newDelete(brandQuery).build());
+
                 getContentResolver().applyBatch(CONTENT_AUTHORITY, deleteBrandOps);
             } catch (OperationApplicationException oae) {
                 // brand not to be deleted
@@ -384,13 +424,13 @@ public class WarrantyUpdateService extends IntentService {
      */
     private void performDeleteCategoryBatch(Category category) {
         if (category != null) {
-            ArrayList<ContentProviderOperation> deleteCategoryOps = new ArrayList<>();
-            Uri categoryQuery = CATEGORY_CONTENT_URI.buildUpon().appendPath(Long.toString(category.getId())).build();
-            deleteCategoryOps.add(ContentProviderOperation.newAssertQuery(categoryQuery)
-                    .withExpectedCount(1)
-                    .build());
-            deleteCategoryOps.add(ContentProviderOperation.newDelete(categoryQuery).build());
             try {
+                ArrayList<ContentProviderOperation> deleteCategoryOps = new ArrayList<>();
+                Uri categoryQuery = CATEGORY_CONTENT_URI.buildUpon().appendPath(Long.toString(category.getId())).build();
+                deleteCategoryOps.add(ContentProviderOperation.newAssertQuery(categoryQuery)
+                        .withExpectedCount(1)
+                        .build());
+                deleteCategoryOps.add(ContentProviderOperation.newDelete(categoryQuery).build());
                 getContentResolver().applyBatch(CONTENT_AUTHORITY, deleteCategoryOps);
             } catch (OperationApplicationException oae) {
                 // category not to be deleted
@@ -488,5 +528,6 @@ public class WarrantyUpdateService extends IntentService {
     private void notifyProblem(Throwable t) {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new NotifyUserRunnable(getApplicationContext(), t));
+        Crashlytics.logException(t);
     }
 }

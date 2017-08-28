@@ -9,6 +9,8 @@ public class Picture extends AbstractBaseIdModel {
     private Warranty warranty;
     private long warrantyId;
     private int position;
+    private boolean toDelete;
+    private boolean toCreate;
 
     public Picture() {
 
@@ -18,6 +20,8 @@ public class Picture extends AbstractBaseIdModel {
         super(in);
         filename = in.readString();
         position = in.readInt();
+        toDelete = readBoolean(in);
+        toCreate = readBoolean(in);
     }
 
     @Override
@@ -25,7 +29,10 @@ public class Picture extends AbstractBaseIdModel {
         super.writeToParcel(dest, flags);
         dest.writeString(filename);
         dest.writeInt(position);
+        dest.writeByte(writeBoolean(toDelete));
+        dest.writeByte(writeBoolean(toCreate));
     }
+
 
 
     public String getFilename() {
@@ -60,6 +67,22 @@ public class Picture extends AbstractBaseIdModel {
         this.position = position;
     }
 
+    public boolean isToDelete() {
+        return toDelete;
+    }
+
+    public void setToDelete(boolean toDelete) {
+        this.toDelete = toDelete;
+    }
+
+    public boolean isToCreate() {
+        return toCreate;
+    }
+
+    public void setToCreate(boolean toCreate) {
+        this.toCreate = toCreate;
+    }
+
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
         public Picture createFromParcel(Parcel in) {
             return new Picture(in);
@@ -72,7 +95,8 @@ public class Picture extends AbstractBaseIdModel {
 
     @Override
     public String toString() {
-        return super.toString() + SEP + getFilename();
+        return super.toString() + SEP + getPosition() + SEP +
+                (isToCreate()?"toCreate":isToDelete()?"toDelete":"ok") + SEP + getFilename();
     }
 
     @Override

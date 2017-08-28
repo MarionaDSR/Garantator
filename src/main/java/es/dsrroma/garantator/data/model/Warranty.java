@@ -123,6 +123,7 @@ public class Warranty extends AbstractBaseModel {
         if (pictures == null) {
             pictures = new ArrayList<Picture>();
         }
+        picture.setToCreate(true);
         pictures.add(picture);
     }
 
@@ -134,10 +135,8 @@ public class Warranty extends AbstractBaseModel {
         return res;
     }
 
-    public boolean removePicture(Picture picture) {
-        pictures.remove(picture);
-        File file = new File(picture.getFilename());
-        return file.delete();
+    public void removePicture(Picture picture) {
+        picture.setToDelete(true);
     }
 
     public boolean removePictures() {

@@ -39,6 +39,14 @@ public abstract class AbstractBaseIdModel implements Parcelable, Cloneable {
         dest.writeLong(time);
     }
 
+    protected boolean readBoolean(Parcel in) {
+        return in.readByte() != 0;
+    }
+
+    protected byte writeBoolean(boolean bool) {
+        return (byte) (bool ? 1 : 0);
+    }
+
     public long getId() {
         return id;
     }

@@ -68,6 +68,14 @@ public class FileUtils {
         return PICTURE_PREFIX + Long.toString(System.currentTimeMillis()) + IMAGE_EXT;
     }
 
+    public static boolean deleteFile(String filename) {
+        File file = new File(filename);
+        boolean deleted = file.delete();
+        if (!deleted) {
+            Crashlytics.log(filename + " can't be deleted"); // TODO to extract
+        }
+        return deleted;
+    }
 
     public static boolean deleteFiles() {
         return deleteFiles(new File(getUserPath()));
