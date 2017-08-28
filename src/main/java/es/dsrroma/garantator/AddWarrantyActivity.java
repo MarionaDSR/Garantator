@@ -68,9 +68,6 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         DatePickerDialog.OnDateSetListener,
         PhotoSourceDialog.PhotoSourceDialogListener {
 
-    private SimpleCursorAdapter brandAdapter;
-    private SimpleCursorAdapter categoryAdapter;
-
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.tvWarrantyName)
     TextView tvWarrantyName;
@@ -134,6 +131,9 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
     private Cursor cursor;
 
+    private SimpleCursorAdapter brandAdapter;
+    private SimpleCursorAdapter categoryAdapter;
+
     // Photos
     private PhotoManager photoManager;
     private PictureAdapter pictureAdapter;
@@ -175,7 +175,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         }
         fillWarranty();
 
-        pictureAdapter = new PictureAdapter(this, warranty);
+        pictureAdapter = new PictureAdapter(this, warranty.getPictures());
         gvPictures.setAdapter(pictureAdapter);
         setListeners();
 

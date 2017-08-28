@@ -2,7 +2,6 @@ package es.dsrroma.garantator;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -20,8 +19,8 @@ import es.dsrroma.garantator.adapters.WarrantyAdapter;
 import es.dsrroma.garantator.data.model.Warranty;
 import io.fabric.sdk.android.Fabric;
 
+import static es.dsrroma.garantator.DetailActivity.EXTRA_WARRANTY_ID;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
-import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements
         WarrantyAdapter.OnItemClickListener,
@@ -58,8 +57,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onItemClick(View v, int position) {
         Warranty warranty = warrantyAdapter.getItem(position);
         Intent intent = new Intent(this, DetailActivity.class);
-        Uri uri = WARRANTY_VIEW_CONTENT_URI.buildUpon().appendPath(Long.toString(warranty.getId())).build();
-        intent.setData(uri);
+        intent.putExtra(EXTRA_WARRANTY_ID, warranty.getId());
         startActivity(intent);
     }
 

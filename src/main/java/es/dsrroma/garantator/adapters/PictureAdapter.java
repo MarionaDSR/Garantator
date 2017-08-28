@@ -13,24 +13,23 @@ import android.widget.ImageView;
 
 import com.crashlytics.android.Crashlytics;
 
+import java.util.List;
+
 import es.dsrroma.garantator.R;
 import es.dsrroma.garantator.data.model.Picture;
-import es.dsrroma.garantator.data.model.Warranty;
 import es.dsrroma.garantator.utils.ImageUtils;
 
 public class PictureAdapter extends ArrayAdapter {
     private Context context;
-    private Warranty warranty;
     private boolean editable;
 
-    public PictureAdapter(Context context, Warranty warranty) {
-        this(context, warranty, true);
+    public PictureAdapter(Context context, List pictures) {
+        this(context, pictures, true);
     }
 
-    public PictureAdapter(Context context, Warranty warranty, boolean editable) {
-        super(context, R.layout.fragment_warranty_picture, warranty.getPictures());
+    public PictureAdapter(Context context, List pictures, boolean editable) {
+        super(context, R.layout.fragment_warranty_picture, pictures);
         this.context = context;
-        this.warranty = warranty;
         this.editable = editable;
     }
 
@@ -111,8 +110,7 @@ public class PictureAdapter extends ArrayAdapter {
         return new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                warranty.removePicture(picture);
-//                remove(picture);
+                picture.setToDelete(true);
                 notifyDataSetChanged();
             }
         };
@@ -131,6 +129,11 @@ public class PictureAdapter extends ArrayAdapter {
     @Override
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
+    }
+
+    public void resetPictures(List pictures) {
+        clear();
+        addAll(pictures);
     }
 
     private class ViewHolder {
