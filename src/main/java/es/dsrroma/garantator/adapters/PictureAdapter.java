@@ -67,8 +67,9 @@ public class PictureAdapter extends ArrayAdapter {
                 Crashlytics.log("Image not found " + picture.getFilename());
                 picture.setToDelete(true);
             }
-//        } else {
-//            holder.iv.setImageResource(R.drawable.ic_pictures);
+        } else {
+//           holder.iv.setImageResource(R.drawable.ic_pictures);
+            holder.iv.setVisibility(View.GONE);
         }
         return convertView;
     }
@@ -111,6 +112,7 @@ public class PictureAdapter extends ArrayAdapter {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 picture.setToDelete(true);
+//                remove(picture);
                 notifyDataSetChanged();
             }
         };
