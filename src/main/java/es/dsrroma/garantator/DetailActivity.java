@@ -229,6 +229,9 @@ public class DetailActivity extends AppCompatActivity implements
 
     private void loadPictures(Cursor cursor) {
         List<Picture> pictures = PictureContract.getBeansFromCursor(cursor);
+        if (warranty == null) {
+            warranty = new Warranty();
+        }
         warranty.setPictures(pictures);
         pictureAdapter.resetPictures(pictures);
     }
