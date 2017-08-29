@@ -32,6 +32,7 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -56,8 +57,15 @@ import static es.dsrroma.garantator.data.contracts.BaseContract.BaseEntry.COLUMN
 import static es.dsrroma.garantator.data.contracts.BrandContract.BRAND_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.CategoryContract.CATEGORY_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry.COLUMN_POSITION;
+import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
 import static es.dsrroma.garantator.data.helpers.WarrantiesProvider.WARRANTY_FILTER;
 import static es.dsrroma.garantator.photo.PhotoSourceDialog.REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION;
+import static es.dsrroma.garantator.utils.Constants.BRAND_LOADER_ID;
+import static es.dsrroma.garantator.utils.Constants.CATEGORY_LOADER_ID;
+import static es.dsrroma.garantator.utils.Constants.EXTRA_WARRANTY_ID;
+import static es.dsrroma.garantator.utils.Constants.PICTURES_LOADER_ID;
+import static es.dsrroma.garantator.utils.Constants.WARRANTY_LOADER_ID;
 import static es.dsrroma.garantator.utils.MyDateUtils.calculateExpirationDate;
 import static es.dsrroma.garantator.utils.MyDateUtils.getNoonTime;
 import static es.dsrroma.garantator.utils.MyStringUtils.isNotEmpty;
@@ -124,12 +132,12 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     private Product product;
     private Brand brand;
     private Category category;
+    private List<Picture> pictures;
 
     private long brandId;
     private long categoryId;
-    private long startDate = Long.MAX_VALUE;
 
-    private Cursor cursor;
+    private Bundle extras;
 
     private SimpleCursorAdapter brandAdapter;
     private SimpleCursorAdapter categoryAdapter;
@@ -137,9 +145,6 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     // Photos
     private PhotoManager photoManager;
     private PictureAdapter pictureAdapter;
-
-    private static final int BRAND_LOADER_ID = 2;
-    private static final int CATEGORY_LOADER_ID = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,44 +161,47 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         actvCategory.setAdapter(categoryAdapter);
         actvCategory.setThreshold(1);
 
-        final Uri warrantyUri = getIntent().getData();
-        editMode = warrantyUri != null;
+        extras = getIntent().getExtras();
+        editMode = extras != null && extras.containsKey(EXTRA_WARRANTY_ID);
+
         if (editMode) {
             setTitle(R.string.edit_warranty_title);
-            cursor = getContentResolver().query(warrantyUri, null, null, null, null, null);
-            warranty = WarrantyViewContract.getBeanFromCursor(cursor);
-            try {
-                oldWarranty = (Warranty)warranty.clone();
-            } catch (CloneNotSupportedException e) {
-                Crashlytics.logException(e);
-                throw new IllegalStateException(e); // warraties are clonable
-            }
-            loadPictures();
-        } else { // add mode
+            getSupportLoaderManager().initLoader(WARRANTY_LOADER_ID, extras, this);
+            getSupportLoaderManager().initLoader(PICTURES_LOADER_ID, extras, this);
+        } else {
             setTitle(R.string.add_warranty_title);
             newWarranty();
+            fillWarranty();
         }
-        fillWarranty();
-
-        pictureAdapter = new PictureAdapter(this, warranty.getPictures());
-        gvPictures.setAdapter(pictureAdapter);
-        setListeners();
 
         getSupportLoaderManager().initLoader(BRAND_LOADER_ID, null, this);
         getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
 
+        if (warranty == null) {
+            pictures = new ArrayList<>();
+        } else {
+            pictures = warranty.getPictures();
+        }
+
+        pictureAdapter = new PictureAdapter(this, pictures);
+        gvPictures.setAdapter(pictureAdapter);
+        setListeners();
+
         photoManager = new PhotoManager(AddWarrantyActivity.this);
     }
 
-    private void loadPictures() {
-        Uri picturesUri = PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).appendPath(Long.toString(warranty.getId())).build();
-        cursor = getContentResolver().query(picturesUri, null, null, null, null, null);
-        List<Picture> pictures = PictureContract.getBeansFromCursor(cursor);
+    private void loadPictures(Cursor cursor) {
+        pictures = PictureContract.getBeansFromCursor(cursor);
+        if (warranty == null) {
+            warranty = new Warranty();
+        }
         warranty.setPictures(pictures);
+        pictureAdapter.resetPictures(pictures);
     }
 
     private void newWarranty() {
         warranty = new Warranty();
+        pictures = warranty.getPictures();
         product = new Product();
         warranty.setProduct(product);
         category = new Category();
@@ -387,7 +395,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                     String newCategory = actvCategory.getText().toString();
                     Uri categoryUri = CATEGORY_CONTENT_URI.buildUpon().appendPath(newCategory).build();
                     category.setName(newCategory);
-
+// TODO review use of cursor
                     Cursor categoryCursor = getContentResolver().query(categoryUri, null, null, null, null, null);
                     if (categoryCursor.moveToNext()) {
                         categoryId = categoryCursor.getLong(categoryCursor.getColumnIndex(COLUMN_ID));
@@ -409,7 +417,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                     String newBrand = actvBrand.getText().toString();
                     Uri brandUri = BRAND_CONTENT_URI.buildUpon().appendPath(newBrand).build();
                     brand.setName(newBrand);
-
+// TODO review use of cursor
                     Cursor brandCursor = getContentResolver().query(brandUri, null, null, null, null, null);
                     if (brandCursor.moveToNext()) {
                         brandId = brandCursor.getLong(brandCursor.getColumnIndex(COLUMN_ID));
@@ -457,9 +465,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
     /* Manage the selected date value */
     public void setDateSelection(long selectedTimestamp) {
-        startDate = selectedTimestamp;
         warranty.setStartDate(selectedTimestamp);
-        updateDateDisplay(startDate, tvStartDate);
+        updateDateDisplay(selectedTimestamp, tvStartDate);
         refreshEndDate();
     }
 
@@ -526,6 +533,14 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
+            case WARRANTY_LOADER_ID: {
+                long warrantyId = args.getLong(EXTRA_WARRANTY_ID);
+                return new CursorLoader(this, getWarrantyUri(warrantyId), null, null, null, null);
+            }
+            case PICTURES_LOADER_ID: {
+                long warrantyId = args.getLong(EXTRA_WARRANTY_ID);
+                return new CursorLoader(this, getPicturesUri(warrantyId), null, null, null, COLUMN_POSITION);
+            }
             case BRAND_LOADER_ID:
                 return new CursorLoader(this, BRAND_CONTENT_URI, null, null, null, null);
             case CATEGORY_LOADER_ID:
@@ -534,23 +549,57 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         return null;
     }
 
+    private Uri getWarrantyUri(long warrantyId) {
+        return WARRANTY_VIEW_CONTENT_URI.buildUpon().appendPath(Long.toString(warrantyId)).build();
+    }
+
+    private Uri getPicturesUri(long warrantyId) {
+        return PICTURE_CONTENT_URI.buildUpon().appendPath(WARRANTY_FILTER).appendPath(Long.toString(warrantyId)).build();
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         switch (loader.getId()) {
+            case WARRANTY_LOADER_ID:
+                warranty = WarrantyViewContract.getBeanFromCursor(data);
+                warranty.setPictures(pictures);
+                try {
+                    oldWarranty = (Warranty)warranty.clone();
+                } catch (CloneNotSupportedException e) {
+                    Crashlytics.logException(e);
+                    throw new IllegalStateException(e); // warranties are clonable
+                }
+                fillWarranty();
+                break;
+            case PICTURES_LOADER_ID:
+                loadPictures(data);
+                break;
             case BRAND_LOADER_ID:
                 brandAdapter.swapCursor(data);
+                break;
             case CATEGORY_LOADER_ID:
                 categoryAdapter.swapCursor(data);
+                break;
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         switch (loader.getId()) {
+            case WARRANTY_LOADER_ID:
+                warranty = new Warranty();
+                pictures = warranty.getPictures();
+                break;
+            case PICTURES_LOADER_ID:
+                pictures = new ArrayList<Picture>();
+                warranty.setPictures(pictures);
+                break;
             case BRAND_LOADER_ID:
                 brandAdapter.swapCursor(null);
+                break;
             case CATEGORY_LOADER_ID:
                 categoryAdapter.swapCursor(null);
+                break;
         }
     }
 
@@ -585,8 +634,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         picture.setWarranty(warranty);
         picture.setFilename(picturePath);
         picture.setPosition(warranty.getPicturesSize());
-        List<Picture> pictures = warranty.getPictures();
         pictures.add(picture);
+        pictureAdapter.add(picture);
         pictureAdapter.notifyDataSetChanged();
     }
 
@@ -622,7 +671,6 @@ public class AddWarrantyActivity extends AppCompatActivity implements
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Toast.makeText(this, "¡Gracias ???? ! " + requestCode + "(" + (requestCode & 0x0000ffff) + ")", Toast.LENGTH_SHORT).show();
         switch (requestCode & 0x0000ffff) { // to manage requestCode from fragments
             case REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

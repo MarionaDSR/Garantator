@@ -33,11 +33,12 @@ import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry.
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.getBeanFromCursor;
 import static es.dsrroma.garantator.data.helpers.WarrantiesProvider.WARRANTY_FILTER;
+import static es.dsrroma.garantator.utils.Constants.EXTRA_WARRANTY_ID;
+import static es.dsrroma.garantator.utils.Constants.PICTURES_LOADER_ID;
+import static es.dsrroma.garantator.utils.Constants.WARRANTY_LOADER_ID;
 
 public class DetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
-
-    public static final String EXTRA_WARRANTY_ID = "EXTRA_WARRANTY_ID";
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.tvWarrantyName)
@@ -85,9 +86,6 @@ public class DetailActivity extends AppCompatActivity implements
     private PictureAdapter pictureAdapter;
 
     boolean toRefresh = true;
-
-    private static final int WARRANTY_LOADER_ID = 1;
-    private static final int PICTURES_LOADER_ID = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +182,7 @@ public class DetailActivity extends AppCompatActivity implements
 
     private void editWarranty() {
         Intent intent = new Intent(this, AddWarrantyActivity.class);
-        intent.setData(getWarrantyUri(warranty.getId()));
+        intent.putExtra(EXTRA_WARRANTY_ID, warranty.getId());
         startActivity(intent);
     }
 

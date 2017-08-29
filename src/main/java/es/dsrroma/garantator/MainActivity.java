@@ -19,8 +19,9 @@ import es.dsrroma.garantator.adapters.WarrantyAdapter;
 import es.dsrroma.garantator.data.model.Warranty;
 import io.fabric.sdk.android.Fabric;
 
-import static es.dsrroma.garantator.DetailActivity.EXTRA_WARRANTY_ID;
 import static es.dsrroma.garantator.data.contracts.WarrantyContract.WARRANTY_CONTENT_URI;
+import static es.dsrroma.garantator.utils.Constants.EXTRA_WARRANTY_ID;
+import static es.dsrroma.garantator.utils.Constants.WARRANTY_LOADER_ID;
 
 public class MainActivity extends AppCompatActivity implements
         WarrantyAdapter.OnItemClickListener,
@@ -31,8 +32,6 @@ public class MainActivity extends AppCompatActivity implements
     private RecyclerView rvWarrantiesList;
     private TextView tvErrorMessage;
     private ProgressBar pbLoadingIndicator;
-
-    private static final int WARRANTY_LOADER_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
