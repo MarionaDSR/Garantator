@@ -15,6 +15,7 @@ import android.view.View;
 import es.dsrroma.garantator.R;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static es.dsrroma.garantator.utils.Constants.REQUEST_CAMERA_PERMISSION;
 
 /**
  * Fragment used for managing options of getting a photo.
@@ -24,9 +25,6 @@ public class PhotoSourceDialog extends DialogFragment {
      * The dialog fragment identifier.
      */
     public static final String PHOTO_SOURCE_DIALOG = "PHOTO_SOURCE_DIALOG";
-
-    public static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 300;
-    public static final int REQUEST_CAMERA_PERMISSION = 400;
 
     /**
      * A pointer to the current callbacks instance (the Activity).

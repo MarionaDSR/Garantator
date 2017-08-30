@@ -60,11 +60,14 @@ import static es.dsrroma.garantator.data.contracts.PictureContract.PICTURE_CONTE
 import static es.dsrroma.garantator.data.contracts.PictureContract.PictureEntry.COLUMN_POSITION;
 import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY_VIEW_CONTENT_URI;
 import static es.dsrroma.garantator.data.helpers.WarrantiesProvider.WARRANTY_FILTER;
-import static es.dsrroma.garantator.photo.PhotoSourceDialog.REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION;
 import static es.dsrroma.garantator.utils.Constants.BRAND_LOADER_ID;
+import static es.dsrroma.garantator.utils.Constants.CAPTURE_IMAGE_REQUEST_CODE;
 import static es.dsrroma.garantator.utils.Constants.CATEGORY_LOADER_ID;
 import static es.dsrroma.garantator.utils.Constants.EXTRA_WARRANTY_ID;
+import static es.dsrroma.garantator.utils.Constants.LOAD_IMAGE_REQUEST_CODE;
 import static es.dsrroma.garantator.utils.Constants.PICTURES_LOADER_ID;
+import static es.dsrroma.garantator.utils.Constants.REQUEST_CAMERA_PERMISSION;
+import static es.dsrroma.garantator.utils.Constants.REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION;
 import static es.dsrroma.garantator.utils.Constants.WARRANTY_LOADER_ID;
 import static es.dsrroma.garantator.utils.MyDateUtils.calculateExpirationDate;
 import static es.dsrroma.garantator.utils.MyDateUtils.getNoonTime;
@@ -616,8 +619,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case PhotoManager.LOAD_IMAGE_REQUEST_CODE:
-            case PhotoManager.CAPTURE_IMAGE_REQUEST_CODE:
+            case LOAD_IMAGE_REQUEST_CODE:
+            case CAPTURE_IMAGE_REQUEST_CODE:
                 String photoPath = photoManager.onActivityResult(requestCode, resultCode, data);
                 if (photoPath != null) {
                     addPicture(photoPath);
@@ -680,7 +683,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                 }
             }
             break;
-            case PhotoSourceDialog.REQUEST_CAMERA_PERMISSION: {
+            case REQUEST_CAMERA_PERMISSION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     onCameraClick();
                 } else {

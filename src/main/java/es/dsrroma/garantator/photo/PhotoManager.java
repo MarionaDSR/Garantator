@@ -18,22 +18,15 @@ import java.io.IOException;
 import es.dsrroma.garantator.R;
 import es.dsrroma.garantator.utils.FileUtils;
 
+import static es.dsrroma.garantator.utils.Constants.CAPTURE_IMAGE_REQUEST_CODE;
+import static es.dsrroma.garantator.utils.Constants.LOAD_IMAGE_REQUEST_CODE;
+
 /**
  * Class to manage all interaction with camera and gallery. Allow to the user
  * to choose one option: Camera or Gallery and scale the selected photo to save
  * memory.
  */
 public class PhotoManager {
-    /**
-     * Request code to load image from the camera (Take a picture)
-     */
-    public static final int CAPTURE_IMAGE_REQUEST_CODE = 100;
-
-    /**
-     * Request code to load image from the gallery
-     */
-    public static final int LOAD_IMAGE_REQUEST_CODE = 200;
-
 
     /**
      * A pointer to the current callbacks instance (the Activity)
@@ -138,7 +131,7 @@ public class PhotoManager {
         if (!storageDir.exists()) {
             if (!storageDir.mkdirs()) {
                 // qué pasa??
-                int i = 0;
+                Crashlytics.log("Unable to create " + storageDir);
             }
         }
         File image = new File(storageDir, FileUtils.getPictureFileName());
