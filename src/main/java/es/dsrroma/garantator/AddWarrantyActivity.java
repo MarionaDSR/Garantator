@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -66,7 +65,7 @@ import static es.dsrroma.garantator.utils.Constants.CATEGORY_LOADER_ID;
 import static es.dsrroma.garantator.utils.Constants.EXTRA_WARRANTY_ID;
 import static es.dsrroma.garantator.utils.Constants.LOAD_IMAGE_REQUEST_CODE;
 import static es.dsrroma.garantator.utils.Constants.PICTURES_LOADER_ID;
-import static es.dsrroma.garantator.utils.Constants.REQUEST_CAMERA_PERMISSION;
+import static es.dsrroma.garantator.utils.Constants.REQUEST_CAMERA_PERMISSIONS;
 import static es.dsrroma.garantator.utils.Constants.REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION;
 import static es.dsrroma.garantator.utils.Constants.WARRANTY_LOADER_ID;
 import static es.dsrroma.garantator.utils.MyDateUtils.calculateExpirationDate;
@@ -298,13 +297,8 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                 // to show two options:
                 // - Choose image from Gallery or
                 // - Take a picture.
-                if (ActivityCompat.checkSelfPermission(AddWarrantyActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(AddWarrantyActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
-                } else {
                     PhotoSourceDialog dialog = new PhotoSourceDialog();
                     dialog.show(getSupportFragmentManager(), PhotoSourceDialog.PHOTO_SOURCE_DIALOG);
-                }
             }
         };
     }
@@ -683,11 +677,17 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                 }
             }
             break;
-            case REQUEST_CAMERA_PERMISSION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    onCameraClick();
-                } else {
-                    Toast.makeText(this, "Si no me das permisos, no puedo hacerlo!!", Toast.LENGTH_LONG).show();
+            case REQUEST_CAMERA_PERMISSIONS: {
+                if (grantResults.length == permissions.length) {
+                    boolean allGranted = true;
+                    for (int result : grantResults) {
+                        allGranted &= result == PERMISSION_GRANTED;
+                    }
+                    if (allGranted) {
+                        onCameraClick();
+                    } else {
+                        Toast.makeText(this, "Si no me das permisos, no puedo hacerlo!!", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
             break;

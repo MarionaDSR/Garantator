@@ -12,10 +12,14 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import es.dsrroma.garantator.R;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static es.dsrroma.garantator.utils.Constants.REQUEST_CAMERA_PERMISSION;
+import static es.dsrroma.garantator.utils.Constants.REQUEST_CAMERA_PERMISSIONS;
+import static es.dsrroma.garantator.utils.Constants.REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION;
 
 /**
  * Fragment used for managing options of getting a photo.
@@ -73,20 +77,28 @@ public class PhotoSourceDialog extends DialogFragment {
             }
 
             private void openCamera() {
+                List<String> neededPermissions = new ArrayList<>();
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
+                    neededPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
                 if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
-                    requestPermission(Manifest.permission.CAMERA, REQUEST_CAMERA_PERMISSION);
-                } else {
+                    neededPermissions.add(Manifest.permission.CAMERA);
+                }
+
+                if (neededPermissions.isEmpty()) {
                     mDialogListener.onCameraClick();
+                } else {
+                    requestPermissions(neededPermissions.toArray(new String[neededPermissions.size()]), REQUEST_CAMERA_PERMISSIONS);
                 }
             }
 
             private void openGallery() {
-//                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                        != PERMISSION_GRANTED) {
-//                    requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
-//                } else {
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PERMISSION_GRANTED) {
+                    requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                } else {
                     mDialogListener.onGalleryClick();
-//                }
+                }
             }
 
             private void requestPermission(final String permission, final int code) {

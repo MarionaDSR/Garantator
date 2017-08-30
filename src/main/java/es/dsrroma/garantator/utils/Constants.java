@@ -15,6 +15,6 @@ public class Constants {
     public static final int CAPTURE_IMAGE_REQUEST_CODE = 100;
     public static final int LOAD_IMAGE_REQUEST_CODE = 200;
     public static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 300;
-    public static final int REQUEST_CAMERA_PERMISSION = 400;
+    public static final int REQUEST_CAMERA_PERMISSIONS = 400;
 
 }
