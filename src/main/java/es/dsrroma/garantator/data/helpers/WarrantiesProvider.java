@@ -22,6 +22,7 @@ import es.dsrroma.garantator.data.contracts.WarrantyContract.WarrantyEntry;
 import es.dsrroma.garantator.data.contracts.WarrantyViewContract.WarrantyViewEntry;
 
 import static es.dsrroma.garantator.data.contracts.BaseContract.BASE_CONTENT_URI;
+import static es.dsrroma.garantator.data.contracts.BaseContract.CONTENT_AUTHORITY;
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_ALL;
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_BY_ID;
 import static es.dsrroma.garantator.data.contracts.BaseContract.QUERY_BY_NAME;
@@ -62,29 +63,28 @@ public class WarrantiesProvider extends ContentProvider {
     private WarrantiesDbHelper openHelper;
 
     public static UriMatcher buildUriMatcher() {
-        final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        final String authority = BaseContract.CONTENT_AUTHORITY;
+        final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);;
 
-        matcher.addURI(authority, WARRANTY_PATH, WARRANTY_CODE);
-        matcher.addURI(authority, WARRANTY_PATH + NUM_PARAM, WARRANTY_CODE_BY_ID);
+        matcher.addURI(CONTENT_AUTHORITY, WARRANTY_PATH, WARRANTY_CODE);
+        matcher.addURI(CONTENT_AUTHORITY, WARRANTY_PATH + NUM_PARAM, WARRANTY_CODE_BY_ID);
 
-        matcher.addURI(authority, PRODUCT_PATH, PRODUCT_CODE);
-        matcher.addURI(authority, PRODUCT_PATH + NUM_PARAM, PRODUCT_CODE_BY_ID);
+        matcher.addURI(CONTENT_AUTHORITY, PRODUCT_PATH, PRODUCT_CODE);
+        matcher.addURI(CONTENT_AUTHORITY, PRODUCT_PATH + NUM_PARAM, PRODUCT_CODE_BY_ID);
 
-        matcher.addURI(authority, BRAND_PATH, BRAND_CODE);
-        matcher.addURI(authority, BRAND_PATH + NUM_PARAM, BRAND_CODE_BY_ID);
-        matcher.addURI(authority, BRAND_PATH + STRING_PARAM, BRAND_CODE_BY_NAME);
+        matcher.addURI(CONTENT_AUTHORITY, BRAND_PATH, BRAND_CODE);
+        matcher.addURI(CONTENT_AUTHORITY, BRAND_PATH + NUM_PARAM, BRAND_CODE_BY_ID);
+        matcher.addURI(CONTENT_AUTHORITY, BRAND_PATH + STRING_PARAM, BRAND_CODE_BY_NAME);
 
-        matcher.addURI(authority, CATEGORY_PATH, CATEGORY_CODE);
-        matcher.addURI(authority, CATEGORY_PATH + NUM_PARAM, CATEGORY_CODE_BY_ID);
-        matcher.addURI(authority, CATEGORY_PATH + STRING_PARAM, CATEGORY_CODE_BY_NAME);
+        matcher.addURI(CONTENT_AUTHORITY, CATEGORY_PATH, CATEGORY_CODE);
+        matcher.addURI(CONTENT_AUTHORITY, CATEGORY_PATH + NUM_PARAM, CATEGORY_CODE_BY_ID);
+        matcher.addURI(CONTENT_AUTHORITY, CATEGORY_PATH + STRING_PARAM, CATEGORY_CODE_BY_NAME);
 
-        matcher.addURI(authority, WARRANTY_VIEW_PATH, WARRANTY_VIEW_CODE);
-        matcher.addURI(authority, WARRANTY_VIEW_PATH + NUM_PARAM, WARRANTY_VIEW_CODE_BY_ID);
+        matcher.addURI(CONTENT_AUTHORITY, WARRANTY_VIEW_PATH, WARRANTY_VIEW_CODE);
+        matcher.addURI(CONTENT_AUTHORITY, WARRANTY_VIEW_PATH + NUM_PARAM, WARRANTY_VIEW_CODE_BY_ID);
 
-        matcher.addURI(authority, PICTURE_PATH, PICTURE_CODE);
-        matcher.addURI(authority, PICTURE_PATH + NUM_PARAM, PICTURE_CODE_BY_ID);
-        matcher.addURI(authority, PICTURE_PATH + "/" + WARRANTY_FILTER + NUM_PARAM, PICTURE_CODE_BY_WARRANTY);
+        matcher.addURI(CONTENT_AUTHORITY, PICTURE_PATH, PICTURE_CODE);
+        matcher.addURI(CONTENT_AUTHORITY, PICTURE_PATH + NUM_PARAM, PICTURE_CODE_BY_ID);
+        matcher.addURI(CONTENT_AUTHORITY, PICTURE_PATH + "/" + WARRANTY_FILTER + NUM_PARAM, PICTURE_CODE_BY_WARRANTY);
 
         return matcher;
     }

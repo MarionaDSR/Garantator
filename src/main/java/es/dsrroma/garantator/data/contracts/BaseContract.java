@@ -3,6 +3,8 @@ package es.dsrroma.garantator.data.contracts;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import es.dsrroma.garantator.BuildConfig;
+
 public abstract class BaseContract {
 
     // SQL Constants
@@ -64,6 +66,6 @@ public abstract class BaseContract {
     public static final int QUERY_BY_NAME = 2;
     public static final int QUERY_BY_WARRANTY = 3;
 
-    public static final String CONTENT_AUTHORITY = "es.dsrroma.garantator"; // TODO use resources
+    public static final String CONTENT_AUTHORITY = BuildConfig.APPLICATION_ID;
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 }
