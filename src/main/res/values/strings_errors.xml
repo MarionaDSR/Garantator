@@ -11,5 +11,8 @@
     <string name="error_insert_sd_card">Need SD Card, insert SD card to continue</string>
     <string name="error_camera_missing">No camera option available</string>
 
+    <!-- Files -->
+    <string name="error_file_not_deleted">%1s can\'t be deleted</string>
+
     <!-- Others -->
 </resources>

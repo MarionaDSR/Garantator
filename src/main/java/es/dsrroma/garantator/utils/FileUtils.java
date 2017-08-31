@@ -11,6 +11,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import es.dsrroma.garantator.Garantator;
+import es.dsrroma.garantator.R;
 
 public class FileUtils {
     public static final String APP_PREFIX = "/garantator";
@@ -72,7 +74,7 @@ public class FileUtils {
         File file = new File(filename);
         boolean deleted = file.delete();
         if (!deleted) {
-            Crashlytics.log(filename + " can't be deleted"); // TODO to extract
+            Crashlytics.log(Garantator.getContext().getString(R.string.error_file_not_deleted, filename));
         }
         return deleted;
     }
