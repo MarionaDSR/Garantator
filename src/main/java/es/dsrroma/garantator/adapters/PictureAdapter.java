@@ -81,9 +81,9 @@ public class PictureAdapter extends ArrayAdapter {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
                         .setView(dialogImage);
                 if (editable) {
-                    dialogBuilder.setPositiveButton(R.string.photo_delete, deleteOnClickListener(picture));
+                    dialogBuilder.setPositiveButton(R.string.dialog_delete, deleteOnClickListener(picture));
                 }
-                dialogBuilder.setNegativeButton(R.string.photo_cancel, negativeOnClickListener()).show();
+                dialogBuilder.setNegativeButton(R.string.dialog_cancel, negativeOnClickListener()).show();
             }
         };
     }
@@ -95,8 +95,8 @@ public class PictureAdapter extends ArrayAdapter {
                     public void onClick(DialogInterface dialog, int which) {
                         new AlertDialog.Builder(context)
                                 .setMessage(R.string.photo_delete_confirm)
-                                .setPositiveButton(R.string.photo_delete, confirmDeleteOnClickListener(picture))
-                                .setNegativeButton(R.string.photo_delete_cancel, negativeOnClickListener())
+                                .setPositiveButton(R.string.dialog_delete, confirmDeleteOnClickListener(picture))
+                                .setNegativeButton(R.string.dialog_cancel, negativeOnClickListener())
                                 .show();
                         }
             };

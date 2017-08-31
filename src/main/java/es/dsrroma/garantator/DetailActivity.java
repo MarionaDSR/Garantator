@@ -1,9 +1,12 @@
 package es.dsrroma.garantator;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -169,10 +172,33 @@ public class DetailActivity extends AppCompatActivity implements
                 editWarranty();
                 return true;
             case R.id.action_delete:
-                deleteWarranty();
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+                dialogBuilder.setMessage(R.string.warranty_delete_confirm);
+                dialogBuilder.setPositiveButton(R.string.dialog_delete, confirmDeleteOnClickListener());
+                dialogBuilder.setNegativeButton(R.string.dialog_cancel, negativeOnClickListener()).show();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @NonNull
+    private DialogInterface.OnClickListener confirmDeleteOnClickListener() {
+        return new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            deleteWarranty();
+            }
+        };
+    }
+
+    @NonNull
+    private DialogInterface.OnClickListener negativeOnClickListener() {
+        return new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // nothing to do
+            }
+        };
     }
 
     private void deleteWarranty() {
