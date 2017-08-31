@@ -60,7 +60,7 @@ public class CursorToBeanUtils {
 
     private static <T> void setValue(Cursor cursor, String column, Class<T> clazz, T bean) {
         try {
-            String fieldName = (column.startsWith("_")) ? column.substring(1) : column; // TODO
+            String fieldName = MyStringUtils.getNameWithoutUnderscore(column);
             Field field = getFieldFromClass(clazz, fieldName);
             if (field == null) {
                 throw new IllegalArgumentException("No field for column " + column + " in " + clazz.getName());
