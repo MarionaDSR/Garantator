@@ -255,7 +255,6 @@ public class WarrantyUpdateService extends IntentService {
     }
 
     private void performUpdateBatch(Warranty newWarranty, Warranty oldWarranty) {
-        List<Picture> picturesToDelete = new ArrayList<>();
         try {
             long now = System.currentTimeMillis();
 
@@ -304,35 +303,32 @@ public class WarrantyUpdateService extends IntentService {
 
             // update pictures
             List<Picture> newPictures = newWarranty.getPictures();
-            List<Picture> cleanedPictures = new ArrayList<>();
             int i = 0;
             for (Picture newPicture: newPictures) {
                 Uri pictureQuery = PICTURE_CONTENT_URI.buildUpon().
                         appendPath(Long.toString(newPicture.getId())).build();
-                if (newPicture.isToDelete()) {
-                    ops.add(ContentProviderOperation.newDelete(pictureQuery).build());
-                    picturesToDelete.add(newPicture);
+                if (newPicture.isToCreate()) {
+                    newPicture.setPosition(i);
+                    ContentValues newPictureCV = newContentValuesNoName(newPicture, now);
+                    newPictureCV.put(COLUMN_FILE_NAME, newPicture.getFilename());
+                    newPictureCV.put(COLUMN_POSITION, newPicture.getPosition());
+                    newPictureCV.put(COLUMN_WARRANTY_ID, newWarranty.getId());
+                    ops.add(ContentProviderOperation.newInsert(PICTURE_CONTENT_URI).withValues(newPictureCV).build());
+                    newPicture.setToCreate(false);
                 } else {
-                    if (newPicture.isToCreate()) {
+                    if (newPicture.getPosition() != i) { // to update
                         newPicture.setPosition(i);
-                        ContentValues newPictureCV = newContentValuesNoName(newPicture, now);
-                        newPictureCV.put(COLUMN_FILE_NAME, newPicture.getFilename());
-                        newPictureCV.put(COLUMN_POSITION, newPicture.getPosition());
-                        newPictureCV.put(COLUMN_WARRANTY_ID, newWarranty.getId());
-                        ops.add(ContentProviderOperation.newInsert(PICTURE_CONTENT_URI).withValues(newPictureCV).build());
-                        newPicture.setToCreate(false);
-                    } else {
-                        if (newPicture.getPosition() != i) { // to update
-                            newPicture.setPosition(i);
-                            ops.add(ContentProviderOperation.newUpdate(pictureQuery).
-                                    withValue(COLUMN_POSITION, i).build());
-                        }
+                        ops.add(ContentProviderOperation.newUpdate(pictureQuery).
+                                withValue(COLUMN_POSITION, i).build());
                     }
-                    cleanedPictures.add(newPicture);
-                    i++;
                 }
+                i++;
             }
-            newWarranty.setPictures(cleanedPictures);
+            for (Picture picture : newWarranty.getPicturesToDelete()) {
+                Uri pictureQuery = PICTURE_CONTENT_URI.buildUpon().
+                        appendPath(Long.toString(picture.getId())).build();
+                ops.add(ContentProviderOperation.newDelete(pictureQuery).build());
+            }
 
             Uri updateProductUri = PRODUCT_CONTENT_URI.buildUpon().appendPath(Long.toString(newProduct.getId())).build();
             ContentProviderOperation.Builder productUpdateOp = ContentProviderOperation.newUpdate(updateProductUri);
@@ -356,7 +352,7 @@ public class WarrantyUpdateService extends IntentService {
 
             getContentResolver().applyBatch(CONTENT_AUTHORITY, ops);
 
-            for (Picture picture: picturesToDelete) {
+            for (Picture picture : newWarranty.getPicturesToDelete()) {
                 FileUtils.deleteFile(picture.getFilename());
             }
         } catch (final Throwable t) {

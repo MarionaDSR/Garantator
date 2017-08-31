@@ -55,21 +55,17 @@ public class PictureAdapter extends ArrayAdapter {
 
         // Get actual item
         final Picture picture = (Picture) getItem(position);
-        if (!picture.isToDelete()) {
-            // Set values
-            int imageSize = (int) getContext().getResources().getDimension(R.dimen.picture_size);
-            Bitmap image = ImageUtils.getScaledBitmapImage(picture.getFilename(), imageSize, imageSize);
-            if (image != null) {
-                holder.iv.setImageBitmap(image);
-                convertView.setOnClickListener(pictureOnClickListener(picture));
-            } else {
-                holder.iv.setImageResource(R.drawable.ic_picture_not_found);
-                Crashlytics.log("Image not found " + picture.getFilename());
-                picture.setToDelete(true);
-            }
+
+        // Set values
+        int imageSize = (int) getContext().getResources().getDimension(R.dimen.picture_size);
+        Bitmap image = ImageUtils.getScaledBitmapImage(picture.getFilename(), imageSize, imageSize);
+        if (image != null) {
+            holder.iv.setImageBitmap(image);
+            convertView.setOnClickListener(pictureOnClickListener(picture));
         } else {
-//            holder.iv.setVisibility(View.INVISIBLE);
             holder.iv.setImageResource(R.drawable.ic_picture_not_found);
+            Crashlytics.log("Image not found " + picture.getFilename());
+            picture.removeFromWarranty();
         }
         return convertView;
     }
@@ -111,7 +107,7 @@ public class PictureAdapter extends ArrayAdapter {
         return new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                picture.setToDelete(true);
+                picture.removeFromWarranty();
                 notifyDataSetChanged();
             }
         };

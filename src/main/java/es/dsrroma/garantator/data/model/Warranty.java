@@ -3,7 +3,6 @@ package es.dsrroma.garantator.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +17,7 @@ public class Warranty extends AbstractBaseModel {
     private int length;
     private String period;
     private List<Picture> pictures = new ArrayList<>();
+    private List<Picture> picturesToDelete = new ArrayList<>();
 
     public Warranty() {
     }
@@ -30,6 +30,7 @@ public class Warranty extends AbstractBaseModel {
         length = in.readInt();
         period = in.readString();
         in.readTypedList(pictures, Picture.CREATOR);
+        in.readTypedList(picturesToDelete, Picture.CREATOR);
     }
 
     @Override
@@ -41,6 +42,7 @@ public class Warranty extends AbstractBaseModel {
         dest.writeInt(length);
         dest.writeString(period);
         dest.writeTypedList(pictures);
+        dest.writeTypedList(picturesToDelete);
     }
 
     public Product getProduct() {
@@ -117,6 +119,9 @@ public class Warranty extends AbstractBaseModel {
 
     public void setPictures(List<Picture> pictures) {
         this.pictures = pictures;
+        for (Picture picture: pictures) {
+            picture.setWarranty(this);
+        }
     }
 
     public void addPicture(Picture picture) {
@@ -125,6 +130,7 @@ public class Warranty extends AbstractBaseModel {
         }
         picture.setToCreate(true);
         pictures.add(picture);
+        picture.setWarranty(this);
     }
 
     public int getPicturesSize() {
@@ -135,17 +141,13 @@ public class Warranty extends AbstractBaseModel {
         return res;
     }
 
-    public void removePicture(Picture picture) {
-        picture.setToDelete(true);
+    public List<Picture> getPicturesToDelete() {
+        return picturesToDelete;
     }
 
-    public boolean removePictures() {
-        boolean res = true;
-        for (Picture picture : pictures) {
-            File file = new File(picture.getFilename());
-            res &= file.delete();
-        }
-        return res;
+    public void removePicture(Picture picture) {
+        picturesToDelete.add(picture);
+        pictures.remove(picture);
     }
 
     public static final Parcelable.Creator<Warranty> CREATOR = new Parcelable.Creator<Warranty>() {
@@ -166,6 +168,11 @@ public class Warranty extends AbstractBaseModel {
         List<Picture> clonedPictures = new ArrayList<>();
         for (Picture picture : pictures) {
             clonedPictures.add((Picture)picture.clone());
+        }
+        List<Picture> picturesToDelete = getPicturesToDelete();
+        List<Picture> clonedPicturesToDelete = new ArrayList<>();
+        for (Picture picture : picturesToDelete) {
+            clonedPicturesToDelete.add((Picture)picture.clone());
         }
         return w;
     }
