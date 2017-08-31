@@ -680,7 +680,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     onGalleryClick();
                 } else {
-                    Toast.makeText(this, "Si no me das permisos, no puedo hacerlo!!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.permissions_message, Toast.LENGTH_LONG).show();
                 }
             }
             break;
@@ -693,7 +693,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
                     if (allGranted) {
                         onCameraClick();
                     } else {
-                        Toast.makeText(this, "Si no me das permisos, no puedo hacerlo!!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.permissions_message, Toast.LENGTH_LONG).show();
                     }
                 }
             }

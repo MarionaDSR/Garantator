@@ -104,8 +104,8 @@ public class PhotoSourceDialog extends DialogFragment {
             private void requestPermission(final String permission, final int code) {
                 final FragmentActivity activity = getActivity();
                 if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-                    Snackbar.make(activity.getCurrentFocus(), "Necesito tu permiso ;)", Snackbar.LENGTH_INDEFINITE)
-                            .setAction("Ok", new View.OnClickListener() {
+                    Snackbar.make(activity.getCurrentFocus(), R.string.permissions_message, Snackbar.LENGTH_INDEFINITE)
+                            .setAction(R.string.dialog_ok, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
                                     ActivityCompat.requestPermissions(activity, new String[]{permission}, code);
