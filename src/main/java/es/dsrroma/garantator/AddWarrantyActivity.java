@@ -170,6 +170,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             setTitle(R.string.edit_warranty_title);
             getSupportLoaderManager().initLoader(WARRANTY_LOADER_ID, extras, this);
             getSupportLoaderManager().initLoader(PICTURES_LOADER_ID, extras, this);
+            pictures = new ArrayList<>();
         } else {
             setTitle(R.string.add_warranty_title);
             newWarranty();
@@ -179,12 +180,6 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         getSupportLoaderManager().initLoader(BRAND_LOADER_ID, null, this);
         getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
 
-        if (warranty == null) {
-            pictures = new ArrayList<>();
-        } else {
-            pictures = warranty.getPictures();
-        }
-
         pictureAdapter = new PictureAdapter(this, pictures);
         gvPictures.setAdapter(pictureAdapter);
         setListeners();
@@ -193,17 +188,22 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     }
 
     private void loadPictures(Cursor cursor) {
-        pictures = PictureContract.getBeansFromCursor(cursor);
+        pictures.clear();
+        pictures.addAll(PictureContract.getBeansFromCursor(cursor));
         if (warranty == null) {
             warranty = new Warranty();
         }
         warranty.setPictures(pictures);
-        pictureAdapter.resetPictures(pictures);
+//        pictureAdapter.notifyDataSetChanged();
+//        pictureAdapter.resetPictures(pictures);
     }
 
     private void newWarranty() {
         warranty = new Warranty();
         pictures = warranty.getPictures();
+        if (pictureAdapter != null) {
+            pictureAdapter.resetPictures(pictures);
+        }
         product = new Product();
         warranty.setProduct(product);
         category = new Category();
@@ -560,6 +560,9 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             case WARRANTY_LOADER_ID:
                 warranty = WarrantyViewContract.getBeanFromCursor(data);
                 warranty.setPictures(pictures);
+//                if (pictureAdapter != null) {
+//                    pictureAdapter.resetPictures(pictures);
+//                }
                 try {
                     oldWarranty = (Warranty)warranty.clone();
                 } catch (CloneNotSupportedException e) {
@@ -590,6 +593,9 @@ public class AddWarrantyActivity extends AppCompatActivity implements
             case PICTURES_LOADER_ID:
                 pictures = new ArrayList<Picture>();
                 warranty.setPictures(pictures);
+                if (pictureAdapter != null) {
+                    pictureAdapter.resetPictures(pictures);
+                }
                 break;
             case BRAND_LOADER_ID:
                 brandAdapter.swapCursor(null);
@@ -631,9 +637,10 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         picture.setWarranty(warranty);
         picture.setFilename(picturePath);
         picture.setPosition(warranty.getPicturesSize());
-        pictures.add(picture);
+//        pictures.add(picture);
+//        pictureAdapter.resetPictures(pictures);
         pictureAdapter.add(picture);
-        pictureAdapter.notifyDataSetChanged();
+//        pictureAdapter.notifyDataSetChanged();
     }
 
     private void addWarranty() {

@@ -68,8 +68,8 @@ public class PictureAdapter extends ArrayAdapter {
                 picture.setToDelete(true);
             }
         } else {
-//           holder.iv.setImageResource(R.drawable.ic_pictures);
-            holder.iv.setVisibility(View.GONE);
+//            holder.iv.setVisibility(View.INVISIBLE);
+            holder.iv.setImageResource(R.drawable.ic_picture_not_found);
         }
         return convertView;
     }
@@ -112,7 +112,6 @@ public class PictureAdapter extends ArrayAdapter {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 picture.setToDelete(true);
-//                remove(picture);
                 notifyDataSetChanged();
             }
         };
