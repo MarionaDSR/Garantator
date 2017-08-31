@@ -118,6 +118,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:columnWidth="@dimen/picture_column_width"
+            android:minHeight="@dimen/picture_column_width"
             android:gravity="center"
             android:horizontalSpacing="@dimen/picture_spacing"
             android:numColumns="auto_fit"
