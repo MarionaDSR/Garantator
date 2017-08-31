@@ -52,17 +52,17 @@ public class WarrantyUpdateService extends IntentService {
     private static final String TAG = WarrantyUpdateService.class.getSimpleName();
 
     //Intent actions
-    public static final String ACTION_INSERT = TAG + ".INSERT";
-    public static final String ACTION_UPDATE = TAG + ".UPDATE";
-    public static final String ACTION_DELETE = TAG + ".DELETE";
+    private static final String ACTION_INSERT = TAG + ".INSERT";
+    private static final String ACTION_UPDATE = TAG + ".UPDATE";
+    private static final String ACTION_DELETE = TAG + ".DELETE";
 
-    public static final String ACTION_INSERT_BATCH = ACTION_INSERT + ".BATCH";
-    public static final String ACTION_UPDATE_BATCH = ACTION_UPDATE + ".BATCH";
-    public static final String ACTION_DELETE_BATCH = ACTION_DELETE + ".BATCH";
+    private static final String ACTION_INSERT_BATCH = ACTION_INSERT + ".BATCH";
+    private static final String ACTION_UPDATE_BATCH = ACTION_UPDATE + ".BATCH";
+    private static final String ACTION_DELETE_BATCH = ACTION_DELETE + ".BATCH";
 
-    public static final String EXTRA_VALUES = TAG + ".ContentValues";
-    public static final String EXTRA_WARRANTY = TAG + ".Warranty";
-    public static final String EXTRA_OLD_WARRANTY = TAG + ".OldWarranty";
+    private static final String EXTRA_VALUES = TAG + ".ContentValues";
+    private static final String EXTRA_WARRANTY = TAG + ".Warranty";
+    private static final String EXTRA_OLD_WARRANTY = TAG + ".OldWarranty";
 
 
     public WarrantyUpdateService() {

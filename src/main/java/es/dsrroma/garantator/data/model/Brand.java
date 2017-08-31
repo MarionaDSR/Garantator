@@ -13,11 +13,6 @@ public class Brand extends AbstractBaseModel {
         super(in);
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
-    }
-
     public static final Parcelable.Creator<Brand> CREATOR = new Parcelable.Creator<Brand>() {
         public Brand createFromParcel(Parcel in) {
             return new Brand(in);

@@ -98,8 +98,8 @@ public class Warranty extends AbstractBaseModel {
     }
 
     public void setLength(String s) {
-        if (isNotEmpty(s.toString())) {
-            setLength(Integer.parseInt(s.toString()));
+        if (isNotEmpty(s)) {
+            setLength(Integer.parseInt(s));
         } else {
             setLength(0);
         }
@@ -145,6 +145,10 @@ public class Warranty extends AbstractBaseModel {
         return picturesToDelete;
     }
 
+    public void setPicturesToDelete(List<Picture> picturesToDelete) {
+        this.picturesToDelete = picturesToDelete;
+    }
+
     public void removePicture(Picture picture) {
         picturesToDelete.add(picture);
         pictures.remove(picture);
@@ -160,7 +164,6 @@ public class Warranty extends AbstractBaseModel {
         }
     };
 
-    @Override
     public Object clone() throws CloneNotSupportedException {
         Warranty w = (Warranty)super.clone();
         w.setProduct((Product)getProduct().clone());
@@ -169,11 +172,13 @@ public class Warranty extends AbstractBaseModel {
         for (Picture picture : pictures) {
             clonedPictures.add((Picture)picture.clone());
         }
+        w.setPictures(clonedPictures);
         List<Picture> picturesToDelete = getPicturesToDelete();
         List<Picture> clonedPicturesToDelete = new ArrayList<>();
         for (Picture picture : picturesToDelete) {
             clonedPicturesToDelete.add((Picture)picture.clone());
         }
+        w.setPicturesToDelete(clonedPicturesToDelete);
         return w;
     }
 }

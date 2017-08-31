@@ -52,7 +52,7 @@
         <item>@string/photo_gallery_button</item>
         <item>@string/photo_camera_button</item>
     </string-array>
-    <string name="dialog_ok">Ok</string>
+    <string name="dialog_ok">OK</string>
     <string name="dialog_delete">Delete</string>
     <string name="dialog_cancel">Cancel</string>
 

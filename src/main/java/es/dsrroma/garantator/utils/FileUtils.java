@@ -57,13 +57,11 @@ public class FileUtils {
 
     public static String getUserPath() {
         File externalStorage = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        String path = externalStorage.getAbsolutePath() + APP_PREFIX;
-        return path;
+        return externalStorage.getAbsolutePath() + APP_PREFIX;
     }
 
     public static String getPicturesPath() {
-        String path = getUserPath() + WARRANTY_PREFIX;
-        return path;
+        return getUserPath() + WARRANTY_PREFIX;
     }
 
     public static String getPictureFileName() {

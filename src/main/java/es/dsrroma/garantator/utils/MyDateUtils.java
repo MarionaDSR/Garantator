@@ -36,7 +36,7 @@ public class MyDateUtils {
         return c.getTimeInMillis();
     }
 
-    public static int getCalendarField(String period) {
+    private static int getCalendarField(String period) {
         switch (period) {
             case "D":
                 return Calendar.DAY_OF_MONTH;

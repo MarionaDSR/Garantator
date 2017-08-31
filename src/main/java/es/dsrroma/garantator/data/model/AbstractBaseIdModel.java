@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import java.util.Date;
 
 public abstract class AbstractBaseIdModel implements Parcelable, Cloneable {
-    protected String SEP = ":";
+    protected final String SEP = ":";
 
     private long id;
     private Date createdAt;

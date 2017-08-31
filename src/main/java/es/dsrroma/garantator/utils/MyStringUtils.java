@@ -4,7 +4,7 @@ import es.dsrroma.garantator.data.model.AbstractBaseModel;
 
 public class MyStringUtils {
 
-    public static final String UNDERSCORE = "_";
+    private static final String UNDERSCORE = "_";
 
     public static String notEmpty(String s) {
         if (s == null) {

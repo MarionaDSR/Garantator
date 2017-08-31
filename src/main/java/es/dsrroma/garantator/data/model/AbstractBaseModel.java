@@ -40,8 +40,4 @@ public abstract class AbstractBaseModel extends AbstractBaseIdModel {
         dest.writeString(name);
     }
 
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
 }

@@ -107,7 +107,7 @@ public class CursorToBeanUtils {
     private static Method getSetter(String column, Field field, Class clazz) {
         try {
             String setterName = getSetterName(column);
-            return clazz.getMethod(setterName, new Class[]{field.getType()});
+            return clazz.getMethod(setterName, field.getType());
         } catch (NoSuchMethodException e) {
             Log.d("getSetter", e.getMessage());
             throw new IllegalArgumentException("No setter for " + field.getName() + " in " + clazz.getName());

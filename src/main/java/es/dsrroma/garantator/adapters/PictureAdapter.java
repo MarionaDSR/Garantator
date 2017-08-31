@@ -123,11 +123,6 @@ public class PictureAdapter extends ArrayAdapter {
                 };
     }
 
-    @Override
-    public void notifyDataSetChanged() {
-        super.notifyDataSetChanged();
-    }
-
     public void resetPictures(List pictures) {
         clear();
         addAll(pictures);

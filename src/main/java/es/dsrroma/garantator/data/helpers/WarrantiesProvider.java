@@ -54,16 +54,17 @@ import static es.dsrroma.garantator.data.contracts.WarrantyViewContract.WARRANTY
 
 public class WarrantiesProvider extends ContentProvider {
 
-    public static final String NUM_PARAM = "/#";
-    public static final String STRING_PARAM = "/*";
     public static final String WARRANTY_FILTER = "warranty";
+
+    private static final String NUM_PARAM = "/#";
+    private static final String STRING_PARAM = "/*";
 
     private static final UriMatcher uriMatcher = buildUriMatcher();
 
     private WarrantiesDbHelper openHelper;
 
-    public static UriMatcher buildUriMatcher() {
-        final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);;
+    private static UriMatcher buildUriMatcher() {
+        final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         matcher.addURI(CONTENT_AUTHORITY, WARRANTY_PATH, WARRANTY_CODE);
         matcher.addURI(CONTENT_AUTHORITY, WARRANTY_PATH + NUM_PARAM, WARRANTY_CODE_BY_ID);

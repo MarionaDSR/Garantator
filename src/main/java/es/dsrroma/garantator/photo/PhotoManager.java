@@ -13,7 +13,6 @@ import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
-import java.io.IOException;
 
 import es.dsrroma.garantator.R;
 import es.dsrroma.garantator.utils.FileUtils;
@@ -57,13 +56,9 @@ public class PhotoManager {
 
     public void getPhotoFromCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        try {
-            File photoFile = createImageFile();
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
-            activity.startActivityForResult(intent, CAPTURE_IMAGE_REQUEST_CODE);
-        } catch (IOException ex) {
-            this.showMessage(activity.getString(R.string.error_camera_missing));
-        }
+        File photoFile = createImageFile();
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+        activity.startActivityForResult(intent, CAPTURE_IMAGE_REQUEST_CODE);
     }
 
     public void getPhotoFromGallery() {
@@ -123,15 +118,13 @@ public class PhotoManager {
      * name for a new photo using a date-time stamp.
      *
      * @return File of image
-     * @throws java.io.IOException
      */
-    private File createImageFile() throws IOException {
+    private File createImageFile() {
         // Create an image file name
         File storageDir = new File(FileUtils.getPicturesPath());
         if (!storageDir.exists()) {
             if (!storageDir.mkdirs()) {
-                // qué pasa??
-                Crashlytics.log("Unable to create " + storageDir);
+                throw new RuntimeException("Unable to create " + storageDir);
             }
         }
         File image = new File(storageDir, FileUtils.getPictureFileName());

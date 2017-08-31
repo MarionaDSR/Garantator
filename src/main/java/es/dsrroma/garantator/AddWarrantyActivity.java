@@ -139,8 +139,6 @@ public class AddWarrantyActivity extends AppCompatActivity implements
     private long brandId;
     private long categoryId;
 
-    private Bundle extras;
-
     private SimpleCursorAdapter brandAdapter;
     private SimpleCursorAdapter categoryAdapter;
 
@@ -163,7 +161,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         actvCategory.setAdapter(categoryAdapter);
         actvCategory.setThreshold(1);
 
-        extras = getIntent().getExtras();
+        Bundle extras = getIntent().getExtras();
         editMode = extras != null && extras.containsKey(EXTRA_WARRANTY_ID);
 
         if (editMode) {
@@ -637,10 +635,7 @@ public class AddWarrantyActivity extends AppCompatActivity implements
         picture.setWarranty(warranty);
         picture.setFilename(picturePath);
         picture.setPosition(warranty.getPicturesSize());
-//        pictures.add(picture);
-//        pictureAdapter.resetPictures(pictures);
         pictureAdapter.add(picture);
-//        pictureAdapter.notifyDataSetChanged();
     }
 
     private void addWarranty() {
